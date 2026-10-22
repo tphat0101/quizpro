@@ -431,11 +431,11 @@
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase URL</label>
-          <input type="text" id="cfg-supa-url" placeholder="https://jzlevapweqnoxxctjfri.supabase.co" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
+          <input type="text" id="cfg-supa-url" placeholder="" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
-          <input type="text" id="cfg-supa-key" placeholder="sb_publishable_8jOMTGpl9BsMRzKcmAu9Zw_zS2TGfb8" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
+          <input type="text" id="cfg-supa-key" placeholder="" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
         </div>
       </div>
 
@@ -492,17 +492,22 @@
         localStorage.setItem('azota_quizzes', JSON.stringify(this.quizzes));
       },
 
-      initSupabase() {
+     initSupabase() {
+        // ĐIỀN TRỰC TIẾP THÔNG TIN CỦA BẠN VÀO 2 DÒNG DƯỚI:
         const DEFAULT_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
         const DEFAULT_KEY = "sb_publishable_8jOMTGpl9BsMRzKcmAu9Zw_zS2TGfb8";
-        const url = localStorage.getItem('azota_supa_url');
-        const key = localStorage.getItem('azota_supa_key');
-        if (url && key && window.supabase) {
+
+        const url = localStorage.getItem('azota_supa_url') || DEFAULT_URL;
+        const key = localStorage.getItem('azota_supa_key') || DEFAULT_KEY;
+        
+        if (url && key && window.supabase && url.startsWith('http')) {
           try {
             this.supabaseClient = window.supabase.createClient(url, key);
-            document.getElementById('btn-cloud-config').classList.add('text-emerald-600');
+            const cloudBtn = document.getElementById('btn-cloud-config');
+            if (cloudBtn) cloudBtn.classList.add('text-emerald-600');
+            console.log("Supabase đã kết nối thành công!");
           } catch(e) {
-            console.error("Supabase init error", e);
+            console.error("Lỗi khởi tạo Supabase:", e);
           }
         }
       },
