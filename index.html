@@ -1277,7 +1277,7 @@
         });
       },
 
-      // ---------------- SHARE & LINK GENERATION (ĐÃ FIX FALLBACK VÀ LỖI ĐƯỜNG DẪN) ----------------
+     // ---------------- SHARE & LINK GENERATION (ĐÃ FIX TRIỆT ĐỂ) ----------------
       async shareQuiz(index) {
         const quiz = this.quizzes[index];
         const modal = document.getElementById('modal-share');
@@ -1285,38 +1285,53 @@
         const warning = document.getElementById('share-warning-length');
         const cloudStatus = document.getElementById('share-cloud-status');
 
+        // Lấy đường dẫn gốc của trang web (tự động xóa bỏ phần # hoặc ? cũ nếu có)
         const baseUrl = window.location.origin + window.location.pathname;
-        let synced = false;
 
-        if (this.supabaseClient) {
-          this.showToast('Đang đồng bộ đề lên Cloud...', 'info');
-          synced = await this.syncQuizToCloud(quiz);
+        // BƯỚC 1: Kiểm tra xem đã kết nối Supabase chưa
+        if (!this.supabaseClient) {
+          this.showToast('Chưa kết nối Supabase! Đang tạo link nén dự phòng...', 'warning');
+          this.fallbackShareLink(quiz, baseUrl, input, warning, cloudStatus);
+          modal.classList.remove('hidden');
+          return;
         }
 
-        if (synced) {
-          input.value = `${baseUrl}?quizId=${quiz.id}`;
-          warning.classList.add('hidden');
-          cloudStatus.classList.remove('hidden');
-        } else {
-          // Dự phòng tự động nếu Supabase chưa kết nối: nén toàn bộ câu hỏi vào link hash
-          const jsonStr = JSON.stringify(quiz);
-          const compressed = LZString.compressToEncodedURIComponent(jsonStr);
-          input.value = `${baseUrl}#quiz=${compressed}`;
-          cloudStatus.classList.add('hidden');
-          warning.classList.remove('hidden');
+        // BƯỚC 2: Thử tải đề lên Supabase
+        this.showToast('Đang tạo link Supabase...', 'info');
+        try {
+          const { error } = await this.supabaseClient.from('quizzes').upsert({
+            id: quiz.id,
+            data: quiz
+          });
+
+          if (error) {
+            console.error("Lỗi Supabase khi chia sẻ:", error);
+            alert(`Supabase từ chối lưu đề: ${error.message}\n(Mã lỗi: ${error.code || 'Chưa rõ'}).\n\nHệ thống sẽ chuyển sang link nén dự phòng cho bạn.`);
+            this.fallbackShareLink(quiz, baseUrl, input, warning, cloudStatus);
+          } else {
+            // THÀNH CÔNG: Hiển thị link Supabase ngắn gọn
+            input.value = `${baseUrl}?quizId=${quiz.id}`;
+            if (warning) warning.classList.add('hidden');
+            if (cloudStatus) cloudStatus.classList.remove('hidden');
+            this.showToast('Đã tạo link Supabase thành công!', 'success');
+          }
+        } catch (err) {
+          console.error("Lỗi mạng Supabase:", err);
+          alert('Không thể kết nối tới máy chủ Supabase. Đang tạo link nén thay thế.');
+          this.fallbackShareLink(quiz, baseUrl, input, warning, cloudStatus);
         }
 
         modal.classList.remove('hidden');
       },
 
-      copyShareLink() {
-        const input = document.getElementById('share-link-input');
-        input.select();
-        navigator.clipboard.writeText(input.value).then(() => {
-          this.showToast('Đã sao chép link đề thi vào bộ nhớ tạm!', 'success');
-        });
+      fallbackShareLink(quiz, baseUrl, input, warning, cloudStatus) {
+        const jsonStr = JSON.stringify(quiz);
+        const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+        input.value = `${baseUrl}#quiz=${compressed}`;
+        if (cloudStatus) cloudStatus.classList.add('hidden');
+        if (warning) warning.classList.remove('hidden');
       },
-
+      
       // ---------------- STUDENT ENTRY ----------------
       prepareStudentEntry(quiz) {
         this.currentQuiz = quiz;
