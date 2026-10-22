@@ -57,8 +57,9 @@
         </div>
       </div>
       <div class="flex items-center space-x-2">
-        <button id="btn-cloud-config" onclick="app.openModal('modal-cloud')" class="p-2 text-slate-500 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition" title="Cấu hình Supabase Cloud">
-          <i class="fa-solid fa-cloud text-lg"></i>
+        <button id="btn-cloud-config" onclick="app.openModal('modal-cloud')" class="px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-slate-600 border-slate-300 hover:bg-slate-50" title="Cấu hình Supabase Cloud">
+          <i class="fa-solid fa-cloud text-sm"></i>
+          <span id="cloud-badge-text">Kết nối Cloud</span>
         </button>
         <button id="btn-switch-mode" onclick="app.navTo('dashboard')" class="hidden text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition">
           <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại Quản lý
@@ -85,9 +86,7 @@
       </div>
 
       <!-- Quiz List -->
-      <div id="quiz-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="quiz-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
     </section>
 
     <!-- VIEW 2: QUIZ CREATOR / EDITOR -->
@@ -162,9 +161,7 @@
             </div>
           </div>
 
-          <div id="creator-questions-list" class="space-y-4">
-            <!-- Dynamic Questions Render -->
-          </div>
+          <div id="creator-questions-list" class="space-y-4"></div>
         </div>
       </div>
     </section>
@@ -211,7 +208,6 @@
 
     <!-- VIEW 4: ACTIVE TESTING (EXAM / PRACTICE) -->
     <section id="view-active-test" class="hidden">
-      <!-- Test Header Bar -->
       <div class="sticky top-16 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 -mx-4 sm:-mx-6 mb-6 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <span id="test-mode-badge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800">
@@ -232,20 +228,13 @@
         </div>
       </div>
 
-      <!-- Test Body -->
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <!-- Question List / Active Question -->
-        <div class="lg:col-span-3 space-y-6" id="test-questions-render">
-          <!-- Question cards injected here -->
-        </div>
+        <div class="lg:col-span-3 space-y-6" id="test-questions-render"></div>
 
-        <!-- Question Navigator Drawer / Box -->
         <div class="lg:col-span-1">
           <div class="bg-white p-4 rounded-2xl border border-slate-200 sticky top-36 shadow-sm">
             <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Mục lục câu hỏi</h4>
-            <div id="test-palette" class="grid grid-cols-5 gap-2 max-h-60 lg:max-h-96 overflow-y-auto custom-scroll p-1">
-              <!-- Number bullets injected here -->
-            </div>
+            <div id="test-palette" class="grid grid-cols-5 gap-2 max-h-60 lg:max-h-96 overflow-y-auto custom-scroll p-1"></div>
 
             <div class="mt-4 pt-3 border-t text-[11px] text-slate-500 space-y-1">
               <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-brand-600 inline-block"></span> Đã trả lời</div>
@@ -268,7 +257,6 @@
         <h2 class="text-2xl font-bold text-slate-900" id="result-headline">Hoàn thành bài tập!</h2>
         <p class="text-slate-500 text-sm mt-1" id="result-subtext">Bạn đã nộp bài thành công.</p>
 
-        <!-- Stats Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
           <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
             <span class="block text-xs font-semibold text-slate-500">Điểm số</span>
@@ -307,11 +295,10 @@
         </div>
       </div>
 
-      <!-- Detailed Question Review Container -->
       <div id="result-review-container" class="space-y-4"></div>
     </section>
 
-    <!-- VIEW 6: TEACHER RESULTS VIEWER (SCORES OF STUDENTS) -->
+    <!-- VIEW 6: TEACHER RESULTS VIEWER -->
     <section id="view-submissions" class="hidden space-y-6">
       <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
         <button onclick="app.navTo('dashboard')" class="text-slate-600 hover:text-slate-900 text-sm font-medium">
@@ -338,9 +325,7 @@
                 <th class="p-3">Ngày nộp</th>
               </tr>
             </thead>
-            <tbody id="submission-table-body" class="divide-y divide-slate-100">
-              <!-- Submissions rows -->
-            </tbody>
+            <tbody id="submission-table-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
         <div id="no-submissions-msg" class="p-8 text-center text-slate-400 text-sm hidden">
@@ -351,7 +336,7 @@
 
   </main>
 
-  <!-- PRACTICE FLOATING CHECK BUTTON (BOTTOM RIGHT) -->
+  <!-- PRACTICE FLOATING CHECK BUTTON -->
   <div id="floating-check-container" class="fixed bottom-5 right-5 z-50 hidden transition-all">
     <button id="btn-practice-check" onclick="app.checkCurrentPracticeQuestion()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-base transition duration-150">
       <i class="fa-solid fa-circle-check text-lg"></i>
@@ -394,7 +379,7 @@
         </button>
       </div>
       
-      <p class="text-xs text-slate-500">Học sinh chỉ cần mở link trên điện thoại hoặc máy tính, nhập tên và lớp là có thể làm bài ngay không cần tài khoản.</p>
+      <p class="text-xs text-slate-500" id="share-modal-desc">Học sinh mở link trên mọi thiết bị để làm bài ngay không cần đăng nhập.</p>
 
       <div class="space-y-2">
         <label class="block text-xs font-semibold text-slate-600">Đường dẫn làm bài trực tuyến:</label>
@@ -406,13 +391,17 @@
         </div>
       </div>
 
+      <div id="share-cloud-status" class="p-3 bg-emerald-50 rounded-lg text-emerald-800 text-xs border border-emerald-200 hidden">
+        <i class="fa-solid fa-circle-check mr-1"></i> <strong>Đã đồng bộ Cloud:</strong> Kết quả học sinh nộp sẽ hiển thị trực tiếp trong mục kết quả của giáo viên!
+      </div>
+
       <div id="share-warning-length" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs border border-amber-200">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Lưu ý:</strong> Đề thi nhiều ảnh có link nén khá dài. Hãy cấu hình Supabase (nút đám mây) để tạo link ngắn gọn hơn.
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Đang dùng link nén dự phòng:</strong> Hãy kiểm tra cấu hình Supabase để dùng link ngắn và lưu điểm về máy giáo viên.
       </div>
     </div>
   </div>
 
-  <!-- MODAL: SUPABASE CONFIGURATION (BACKEND MIỄN PHÍ) -->
+  <!-- MODAL: SUPABASE CONFIGURATION (ĐÃ BỔ SUNG NÚT TEST KẾT NỐI) -->
   <div id="modal-cloud" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -425,29 +414,30 @@
       </div>
 
       <p class="text-xs text-slate-600 leading-relaxed">
-        Để chia sẻ đề qua link ngắn và đồng bộ kết quả học sinh gửi về máy giáo viên theo thời gian thực, hãy điền thông tin Supabase (miễn phí trọn đời):
+        Điền đúng thông tin từ Supabase để đồng bộ đề thi và nhận điểm thi của học sinh:
       </p>
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase URL</label>
-          <input type="text" id="cfg-supa-url" placeholder="" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Project URL</label>
+          <input type="text" id="cfg-supa-url" placeholder="https://jzlevapweqnoxxctjfri.supabase.co" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
-          <input type="text" id="cfg-supa-key" placeholder="" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Project Anon Key (Bắt buộc bắt đầu bằng <code class="text-rose-600 font-bold">eyJ...</code>)</label>
+          <textarea id="cfg-supa-key" rows="3" placeholder="Dán chuỗi Anon Key bắt đầu bằng eyJ... vào đây" class="w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-brand-500 font-mono"></textarea>
         </div>
       </div>
 
-      <div class="bg-slate-50 p-3 rounded-lg text-[11px] text-slate-500 space-y-1">
-        <p class="font-semibold text-slate-700">Tạo 2 bảng trong Supabase SQL Editor:</p>
-        <code>create table quizzes (id text primary key, data jsonb);</code><br>
-        <code>create table results (id text primary key, quiz_id text, data jsonb, created_at timestamptz default now());</code>
-      </div>
+      <div id="cloud-test-result" class="hidden p-3 rounded-lg text-xs"></div>
 
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="app.closeModal('modal-cloud')" class="px-4 py-2 text-slate-600 text-xs font-semibold">Đóng</button>
-        <button onclick="app.saveCloudConfig()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg">Lưu cấu hình</button>
+      <div class="flex justify-between items-center pt-2 border-t">
+        <button type="button" onclick="app.testSupabaseConnection()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5">
+          <i class="fa-solid fa-vial"></i> Kiểm tra kết nối
+        </button>
+        <div class="flex gap-2">
+          <button onclick="app.closeModal('modal-cloud')" class="px-3 py-2 text-slate-500 text-xs font-semibold">Đóng</button>
+          <button onclick="app.saveCloudConfig()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg">Lưu cấu hình</button>
+        </div>
       </div>
     </div>
   </div>
@@ -456,23 +446,23 @@
   <script>
     /**
      * AZOTALITE CORE CONTROLLER
-     * Architecture: Single-page App with Reactive State & Dual Storage (LocalStorage / Supabase)
      */
     const app = {
-      // State
+      // Configuration mặc định (Thay Anon key bắt đầu bằng eyJ vào DEFAULT_KEY nếu muốn nạp sẵn)
+      DEFAULT_URL: "https://jzlevapweqnoxxctjfri.supabase.co",
+      DEFAULT_KEY: "", // << DÁN ANON KEY BẮT ĐẦU BẰNG "eyJ..." VÀO ĐÂY (NẾU MUỐN CỐ ĐỊNH)
+
       quizzes: [],
       currentQuiz: null,
       editingQuizIndex: null,
       testSession: null,
       supabaseClient: null,
 
-      // Initialize Application
       init() {
         this.loadLocalStorage();
         this.initSupabase();
         this.checkUrlForSharedQuiz();
 
-        // PDF.js worker setup
         if (window.pdfjsLib) {
           pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
@@ -492,23 +482,81 @@
         localStorage.setItem('azota_quizzes', JSON.stringify(this.quizzes));
       },
 
-     initSupabase() {
-        // ĐIỀN TRỰC TIẾP THÔNG TIN CỦA BẠN VÀO 2 DÒNG DƯỚI:
-        const DEFAULT_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
-        const DEFAULT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bGV2YXB3ZXFub3h4Y3RqZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODg2NzYsImV4cCI6MjEwODA2NDY3Nn0.LHrsFhLsrxT4O_yPvjYVdUVSpbo0yDXtvphoZGchrV8";
+      initSupabase() {
+        let url = (localStorage.getItem('azota_supa_url') || this.DEFAULT_URL).trim();
+        let key = (localStorage.getItem('azota_supa_key') || this.DEFAULT_KEY).trim();
 
-        const url = localStorage.getItem('azota_supa_url') || DEFAULT_URL;
-        const key = localStorage.getItem('azota_supa_key') || DEFAULT_KEY;
-        
+        const badgeText = document.getElementById('cloud-badge-text');
+        const badgeBtn = document.getElementById('btn-cloud-config');
+        document.getElementById('cfg-supa-url').value = url;
+        document.getElementById('cfg-supa-key').value = key;
+
+        // Kiểm tra tính hợp lệ sơ bộ của key: phải bắt đầu bằng eyJ
         if (url && key && window.supabase && url.startsWith('http')) {
+          if (!key.startsWith('eyJ')) {
+            console.warn("Anon Key không hợp lệ (không bắt đầu bằng eyJ). Supabase sẽ bị vô hiệu hóa.");
+            badgeText.innerText = "Lỗi Key Cloud";
+            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-rose-600 border-rose-300 bg-rose-50";
+            this.supabaseClient = null;
+            return;
+          }
+
           try {
             this.supabaseClient = window.supabase.createClient(url, key);
-            const cloudBtn = document.getElementById('btn-cloud-config');
-            if (cloudBtn) cloudBtn.classList.add('text-emerald-600');
-            console.log("Supabase đã kết nối thành công!");
+            badgeText.innerText = "Cloud đã bật";
+            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-emerald-700 border-emerald-300 bg-emerald-50";
           } catch(e) {
             console.error("Lỗi khởi tạo Supabase:", e);
+            this.supabaseClient = null;
+            badgeText.innerText = "Lỗi kết nối";
+            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-rose-600 border-rose-300 bg-rose-50";
           }
+        } else {
+          badgeText.innerText = "Chưa nối Cloud";
+          badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-slate-600 border-slate-300 hover:bg-slate-50";
+          this.supabaseClient = null;
+        }
+      },
+
+      async testSupabaseConnection() {
+        const url = document.getElementById('cfg-supa-url').value.trim();
+        const key = document.getElementById('cfg-supa-key').value.trim();
+        const resBox = document.getElementById('cloud-test-result');
+        resBox.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-rose-50', 'text-rose-800', 'border-rose-200');
+
+        if (!url || !key) {
+          resBox.className = "p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200";
+          resBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Vui lòng điền đầy đủ cả URL và Anon Key!';
+          return;
+        }
+
+        if (!key.startsWith('eyJ')) {
+          resBox.className = "p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200";
+          resBox.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> <strong>Sai loại Key:</strong> Bạn đang dùng sai key. Anon Key bắt buộc phải bắt đầu bằng chữ <code>eyJ...</code>!';
+          return;
+        }
+
+        resBox.className = "p-3 rounded-lg text-xs bg-slate-50 text-slate-700 border border-slate-200";
+        resBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang gửi yêu cầu kiểm tra tới máy chủ Supabase...';
+
+        try {
+          const testClient = window.supabase.createClient(url, key);
+          const { data, error } = await testClient.from('quizzes').select('id').limit(1);
+
+          if (error) {
+            resBox.className = "p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200";
+            if (error.code === '42P01') {
+              resBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Thiếu bảng:</strong> Kết nối được nhưng chưa tạo bảng <code>quizzes</code> trong SQL Editor!';
+            } else {
+              resBox.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i> <strong>Lỗi kết nối:</strong> ${error.message} (Code: ${error.code || 'RLS/Auth'})`;
+            }
+          } else {
+            resBox.className = "p-3 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200";
+            resBox.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> <strong>Tuyệt vời!</strong> Kết nối Supabase thành công 100%. Bảng dữ liệu đã sẵn sàng.';
+          }
+        } catch (err) {
+          resBox.className = "p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200";
+          resBox.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i> Lỗi hệ thống: ${err.message}`;
         }
       },
 
@@ -519,30 +567,26 @@
           localStorage.setItem('azota_supa_url', url);
           localStorage.setItem('azota_supa_key', key);
           this.initSupabase();
-          this.showToast('Cấu hình Supabase thành công!', 'success');
+          this.showToast('Đã lưu cấu hình Supabase!', 'success');
         } else {
           localStorage.removeItem('azota_supa_url');
           localStorage.removeItem('azota_supa_key');
-          this.supabaseClient = null;
-          document.getElementById('btn-cloud-config').classList.remove('text-emerald-600');
-          this.showToast('Đã hủy cấu hình Supabase.', 'info');
+          this.initSupabase();
+          this.showToast('Đã xóa thông tin Supabase.', 'info');
         }
         this.closeModal('modal-cloud');
       },
 
-      // Check URL parameters or Hash for Student test mode
       async checkUrlForSharedQuiz() {
         const urlParams = new URLSearchParams(window.location.search);
         const hash = window.location.hash;
 
-        // Check if loading by Supabase Quiz ID
         const quizId = urlParams.get('quizId');
         if (quizId) {
           await this.loadQuizFromCloud(quizId);
           return;
         }
 
-        // Check if loading by compressed data in hash
         if (hash.startsWith('#quiz=')) {
           try {
             const compressed = hash.substring(6);
@@ -562,21 +606,21 @@
 
       async loadQuizFromCloud(quizId) {
         if (!this.supabaseClient) {
-          // If student doesn't have supabase config in local, try fallback configuration stored in query or public key if any
-          alert('Chưa cấu hình Supabase để tải đề qua ID!');
+          alert('Thiết bị này chưa nhận được cấu hình Supabase hợp lệ để tải đề thi!');
           this.navTo('dashboard');
           return;
         }
+
+        this.showToast('Đang tải đề thi từ Cloud...', 'info');
         const { data, error } = await this.supabaseClient.from('quizzes').select('data').eq('id', quizId).single();
         if (error || !data) {
-          alert('Không tìm thấy đề thi trên máy chủ!');
+          alert('Không tìm thấy đề thi trên máy chủ hoặc mạng bị gián đoạn: ' + (error ? error.message : ''));
           this.navTo('dashboard');
         } else {
           this.prepareStudentEntry(data.data);
         }
       },
 
-      // Views Navigation
       navTo(viewName) {
         const views = ['dashboard', 'creator', 'student-entry', 'active-test', 'result', 'submissions'];
         views.forEach(v => {
@@ -586,7 +630,6 @@
         const target = document.getElementById(`view-${viewName}`);
         if (target) target.classList.remove('hidden');
 
-        // Toggle back button
         const backBtn = document.getElementById('btn-switch-mode');
         if (viewName !== 'dashboard') {
           backBtn.classList.remove('hidden');
@@ -595,13 +638,11 @@
           this.renderQuizList();
         }
 
-        // Hide practice floating button when not in test
         if (viewName !== 'active-test') {
           document.getElementById('floating-check-container').classList.add('hidden');
         }
       },
 
-      // ---------------- DASHBOARD & QUIZ CRUD ----------------
       renderQuizList() {
         const container = document.getElementById('quiz-list');
         container.innerHTML = '';
@@ -686,7 +727,6 @@
 
       editQuiz(index) {
         this.editingQuizIndex = index;
-        // Deep copy
         this.currentQuiz = JSON.parse(JSON.stringify(this.quizzes[index]));
         document.getElementById('creator-heading').innerText = 'Chỉnh sửa đề thi';
         document.getElementById('quiz-title').value = this.currentQuiz.title;
@@ -696,7 +736,7 @@
         this.navTo('creator');
       },
 
-      saveCurrentQuiz() {
+      async saveCurrentQuiz() {
         const title = document.getElementById('quiz-title').value.trim();
         if (!title) {
           alert('Vui lòng nhập tên đề thi!');
@@ -718,14 +758,24 @@
         }
 
         this.saveLocalStorage();
-        this.syncQuizToCloud(this.currentQuiz);
+        await this.syncQuizToCloud(this.currentQuiz);
         this.showToast('Lưu đề thi thành công!', 'success');
         this.navTo('dashboard');
       },
 
       async syncQuizToCloud(quiz) {
-        if (this.supabaseClient) {
-          await this.supabaseClient.from('quizzes').upsert({ id: quiz.id, data: quiz });
+        if (!this.supabaseClient) return false;
+        try {
+          const { error } = await this.supabaseClient.from('quizzes').upsert({ id: quiz.id, data: quiz });
+          if (error) {
+            console.error("Lỗi đồng bộ lên Supabase:", error);
+            this.showToast(`Cảnh báo Cloud: ${error.message}`, 'warning');
+            return false;
+          }
+          return true;
+        } catch(e) {
+          console.error("Lỗi kết nối Cloud:", e);
+          return false;
         }
       },
 
@@ -741,7 +791,7 @@
         };
       },
 
-      // ---------------- IMPORT WORD / PDF / FILE PARSING ----------------
+      // ---------------- IMPORT WORD / PDF ----------------
       async handleDocxUpload(input) {
         const file = input.files[0];
         if (!file) return;
@@ -752,7 +802,6 @@
         reader.onload = async (e) => {
           const arrayBuffer = e.target.result;
           try {
-            // Mammoth convert to HTML while preserving inline styling (bold / red)
             const marks = await this.extractDocxMarks(arrayBuffer);
             const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
             const html = result.value;
@@ -794,7 +843,6 @@
         reader.readAsArrayBuffer(file);
       },
 
-      // Bỏ nhãn ở đầu đoạn ("Câu 1.", "A.", "a)") dù nó nằm trong thẻ <strong>/<span>
       stripLeadingLabel(root, labelRe) {
         const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
         const nodes = [];
@@ -811,7 +859,6 @@
         }
       },
 
-      // Làm sạch HTML của một đoạn: bỏ nhãn đầu dòng, (tuỳ chọn) bỏ in đậm/gạch chân dùng để đánh dấu đáp án
       cleanOptionHtml(p, labelRe = /^\s*[A-Za-z][\.\)]\s*/, unwrapBold = true) {
         const clone = p.cloneNode(true);
         if (unwrapBold) {
@@ -822,15 +869,12 @@
         }
         clone.normalize();
         this.stripLeadingLabel(clone, labelRe);
-        // Dọn các thẻ định dạng rỗng còn sót lại sau khi bỏ nhãn
         clone.querySelectorAll('strong, b, u, em, i, span').forEach(el => {
           if (!el.textContent.trim() && !el.querySelector('img')) el.remove();
         });
         return clone.innerHTML.trim();
       },
 
-      // Đọc word/document.xml + styles.xml để biết đoạn nào có chữ tô màu / in đậm / gạch chân
-      // (kể cả khi định dạng đến từ Style như "mau" chứ không gán trực tiếp lên chữ)
       async extractDocxMarks(arrayBuffer) {
         const marks = [];
         try {
@@ -839,7 +883,6 @@
           const attr = (el, name) => el.getAttributeNS(W, name) || el.getAttribute('w:' + name) || '';
           const child = (el, name) => el ? Array.from(el.children).find(c => c.localName === name) : null;
 
-          // --- Đọc styles.xml ---
           const styleMap = {};
           const stylesFile = zip.file('word/styles.xml');
           if (stylesFile) {
@@ -854,7 +897,6 @@
             });
           }
 
-          // Từ <w:rPr> -> {strong: có màu/highlight, weak: in đậm/gạch chân}
           const rprFlags = (rPr) => {
             let strong = false, weak = false;
             if (!rPr) return { strong, weak };
@@ -882,7 +924,6 @@
             return (styleCache[id] = { strong: own.strong || base.strong, weak: own.weak || base.weak });
           };
 
-          // --- Đọc document.xml ---
           const xmlStr = await zip.file('word/document.xml').async('string');
           const xml = new DOMParser().parseFromString(xmlStr, 'application/xml');
           const paras = Array.from(xml.getElementsByTagNameNS(W, 'p'));
@@ -892,7 +933,6 @@
               const t = Array.from(r.getElementsByTagNameNS(W, 't')).map(x => x.textContent).join('');
               if (!t.trim()) return;
               text += t;
-              // Run chỉ chứa nhãn "a." / "B)" thường in đậm cho đẹp -> tách riêng
               const isLabelRun = /^\s*[A-Za-z][\.\)]\s*$/.test(t);
               const rPr = child(r, 'rPr');
               const direct = rprFlags(rPr);
@@ -906,7 +946,6 @@
             const key = text.replace(/\s+/g, '').toLowerCase();
             if (!key) return;
 
-            // Style áp cho cả đoạn (bỏ qua style mặc định "Normal")
             const pStyle = child(child(para, 'pPr'), 'pStyle');
             if (pStyle) {
               const id = attr(pStyle, 'val');
@@ -932,7 +971,6 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Lấy các đoạn theo thứ tự; bảng được xử lý nguyên khối, bỏ qua đoạn lồng bên trong
         const paragraphs = Array.from(doc.querySelectorAll('p, li, table, h1, h2, h3')).filter(el => {
           if (el.tagName !== 'TABLE' && el.closest('table')) return false;
           if (el.tagName !== 'TABLE' && el.querySelector('p, li, table')) return false;
@@ -941,23 +979,18 @@
 
         let parsedQuestions = [];
         let currentQ = null;
-        let mi = 0; // con trỏ đồng bộ với danh sách marks từ XML
+        let mi = 0;
 
-        // Regex for Question trigger: Câu 1, Câu 1:, Câu 1., 1., Bài 1
         const qRegex = /^(Câu\s*\d+|Bài\s*\d+|\d+)\s*[:.]/i;
         const stemLabelRe = /^\s*(?:(?:Câu|Bài)\s*\d+|\d+)\s*[:.]\s*/i;
-        // Regex for Options: A., B., C., D. or A), B)
         const optRegex = /^([A-D])[\.\)]\s*(.*)/i;
-        // Regex for True/False subitems: a), b), c), d)
         const tfSubRegex = /^([a-d])[\.\)]\s*(.*)/i;
-        // Tiêu đề Đúng/Sai: "Đúng hay Sai", "Đúng/Sai", "Đúng - Sai", "đúng hoặc sai"...
         const tfHeaderRegex = /đúng\s*(?:[-\/]|hay|hoặc|or|và)?\s*sai/i;
         const labelOnlyRe = /^\s*[A-Za-z][\.\)]\s*$/;
 
         const started = (q) => q.type === 'mcq' ? q.options.length > 0 : q.subQuestions.length > 0;
 
         paragraphs.forEach(p => {
-          // Bảng nằm trong phần đề của câu hỏi -> giữ nguyên bảng
           if (p.tagName === 'TABLE') {
             if (currentQ && !started(currentQ)) currentQ.content += '<br>' + p.outerHTML;
             return;
@@ -965,7 +998,6 @@
 
           const rawText = (p.textContent || '').trim();
 
-          // Đoạn chỉ có hình ảnh -> gắn vào phần đề của câu hiện tại
           if (!rawText) {
             if (currentQ && p.querySelector('img') && !started(currentQ)) {
               currentQ.content += '<br>' + p.innerHTML;
@@ -973,7 +1005,6 @@
             return;
           }
 
-          // Tra định dạng (màu/đậm) của đoạn này từ XML
           let flags = { strong: false, weak: false };
           if (p.tagName === 'P' || p.tagName === 'LI') {
             const key = rawText.replace(/\s+/g, '').toLowerCase().slice(0, 40);
@@ -985,11 +1016,9 @@
           const isLW = !!flags.lw;
           let isWeak = !!flags.weak;
           if (marks.length === 0) {
-            // Không đọc được XML -> dùng tạm thẻ in đậm trong HTML (bỏ qua thẻ chỉ chứa nhãn a./b.)
             isWeak = Array.from(p.querySelectorAll('strong, b, u')).some(el => !labelOnlyRe.test(el.textContent));
           }
 
-          // Câu hỏi mới
           if (qRegex.test(rawText)) {
             if (currentQ) parsedQuestions.push(currentQ);
 
@@ -1006,7 +1035,6 @@
 
           if (!currentQ) return;
 
-          // Đề không ghi "Đúng/Sai" ở dòng đầu nhưng có nhắc ở phần đề và các ý là a. b. c. d. -> coi là Đúng/Sai
           if (currentQ.type === 'mcq' && currentQ.options.length === 0 && /^[a-d][\.\)]\s/.test(rawText)) {
             const stemText = currentQ.content.replace(/<[^>]*>/g, ' ');
             if (/đúng/i.test(stemText) && /sai/i.test(stemText)) currentQ.type = 'tf';
@@ -1026,7 +1054,6 @@
                 _lw: isLW
               });
             } else if (currentQ.options.length === 0) {
-              // Phần đề kéo dài nhiều dòng
               currentQ.content += '<br>' + p.innerHTML;
             }
           } else if (currentQ.type === 'tf') {
@@ -1050,17 +1077,16 @@
 
         if (currentQ) parsedQuestions.push(currentQ);
 
-        // Chọn đáp án đúng dựa trên định dạng; câu nào không xác định được thì báo cho giáo viên
         let unmarked = 0;
         parsedQuestions.forEach(q => {
           if (q.type === 'mcq' && q.options.length > 0) {
             const n = q.options.length;
-            let picked = q.options.filter(o => o._strong);              // ưu tiên chữ tô màu / highlight
-            if (picked.length === 0 || picked.length === n) picked = q.options.filter(o => o._weak); // rồi tới in đậm / gạch chân
-            if (picked.length === 0 || picked.length === n) picked = q.options.filter(o => o._lw);   // cuối cùng: chỉ nhãn A./B. được in đậm
+            let picked = q.options.filter(o => o._strong);
+            if (picked.length === 0 || picked.length === n) picked = q.options.filter(o => o._weak);
+            if (picked.length === 0 || picked.length === n) picked = q.options.filter(o => o._lw);
             if (picked.length === 0 || picked.length === n) {
               unmarked++;
-              q.options[0].isCorrect = true; // tạm chọn A
+              q.options[0].isCorrect = true;
             } else {
               picked[0].isCorrect = true;
             }
@@ -1071,9 +1097,9 @@
             if (picked.length === 0 || picked.length === n) picked = q.subQuestions.filter(s => s._weak);
             if (picked.length === 0 || picked.length === n) picked = q.subQuestions.filter(s => s._lw);
             if (picked.length === 0 || picked.length === n) {
-              unmarked++; // tạm để tất cả là Sai
+              unmarked++;
             } else {
-              picked.forEach(s => { s.correctAnswer = true; }); // ý được tô màu / in đậm = Đúng
+              picked.forEach(s => { s.correctAnswer = true; });
             }
             q.subQuestions.forEach(s => { delete s._strong; delete s._weak; delete s._lw; });
           }
@@ -1125,7 +1151,7 @@
                 id: 'opt_' + optMatch[1].toUpperCase(),
                 label: optMatch[1].toUpperCase(),
                 content: optMatch[2],
-                isCorrect: cur.options.length === 0 // default first option if unknown
+                isCorrect: cur.options.length === 0
               });
             } else {
               if (cur.options.length === 0) cur.content += ' ' + line;
@@ -1251,31 +1277,33 @@
         });
       },
 
-      // ---------------- SHARE & LINK GENERATION ----------------
+      // ---------------- SHARE & LINK GENERATION (ĐÃ FIX FALLBACK VÀ LỖI ĐƯỜNG DẪN) ----------------
       async shareQuiz(index) {
         const quiz = this.quizzes[index];
         const modal = document.getElementById('modal-share');
         const input = document.getElementById('share-link-input');
         const warning = document.getElementById('share-warning-length');
+        const cloudStatus = document.getElementById('share-cloud-status');
 
         const baseUrl = window.location.origin + window.location.pathname;
+        let synced = false;
 
         if (this.supabaseClient) {
-          // Sync quiz to Supabase and use clean Short URL
-          this.showToast('Đang tải đề lên Cloud để tạo link ngắn...', 'info');
-          await this.syncQuizToCloud(quiz);
+          this.showToast('Đang đồng bộ đề lên Cloud...', 'info');
+          synced = await this.syncQuizToCloud(quiz);
+        }
+
+        if (synced) {
           input.value = `${baseUrl}?quizId=${quiz.id}`;
           warning.classList.add('hidden');
+          cloudStatus.classList.remove('hidden');
         } else {
-          // Fallback to LZString URL hash
+          // Dự phòng tự động nếu Supabase chưa kết nối: nén toàn bộ câu hỏi vào link hash
           const jsonStr = JSON.stringify(quiz);
           const compressed = LZString.compressToEncodedURIComponent(jsonStr);
           input.value = `${baseUrl}#quiz=${compressed}`;
-          if (input.value.length > 2000) {
-            warning.classList.remove('hidden');
-          } else {
-            warning.classList.add('hidden');
-          }
+          cloudStatus.classList.add('hidden');
+          warning.classList.remove('hidden');
         }
 
         modal.classList.remove('hidden');
@@ -1289,13 +1317,12 @@
         });
       },
 
-      // ---------------- STUDENT ENTRY & PREPARATION ----------------
+      // ---------------- STUDENT ENTRY ----------------
       prepareStudentEntry(quiz) {
         this.currentQuiz = quiz;
         document.getElementById('entry-quiz-title').innerText = quiz.title;
         document.getElementById('entry-quiz-meta').innerText = `Thời gian: ${quiz.duration ? quiz.duration + ' phút' : 'Tự do'} • ${quiz.questions.length} câu hỏi`;
 
-        // Handle allowed modes
         const btnPractice = document.getElementById('btn-choose-practice');
         const btnExam = document.getElementById('btn-choose-exam');
         if (quiz.allowedMode === 'practice') {
@@ -1330,7 +1357,7 @@
         }
       },
 
-      // ---------------- SHUFFLE ENGINE & ACTIVE TEST ----------------
+      // ---------------- TEST RUNTIME ----------------
       startTest() {
         const name = document.getElementById('student-name').value.trim();
         const sClass = document.getElementById('student-class').value.trim();
@@ -1340,11 +1367,9 @@
           return;
         }
 
-        // Deep copy questions and shuffle
         let shuffledQuestions = JSON.parse(JSON.stringify(this.currentQuiz.questions));
         this.shuffleArray(shuffledQuestions);
 
-        // Shuffle options for MCQ while preserving correct flag
         shuffledQuestions.forEach(q => {
           if (q.type === 'mcq') {
             this.shuffleArray(q.options);
@@ -1359,18 +1384,16 @@
           quizTitle: this.currentQuiz.title,
           questions: shuffledQuestions,
           currentIndex: 0,
-          userAnswers: {}, // key: question index -> answer payload
-          wrongAttempts: {}, // tracks wrong attempts per question
-          isLocked: {}, // if question is verified in practice mode
+          userAnswers: {},
+          wrongAttempts: {},
+          isLocked: {},
           startTime: Date.now(),
           durationSeconds: (this.currentQuiz.duration || 45) * 60,
           timerInterval: null
         };
 
-        // Xóa phần xem lại của lần làm trước (nếu có)
         document.getElementById('result-review-container').innerHTML = '';
 
-        // UI Updates
         document.getElementById('test-user-info').innerText = `${name} - ${sClass}`;
         const badge = document.getElementById('test-mode-badge');
         const timerBox = document.getElementById('exam-timer');
@@ -1409,7 +1432,7 @@
 
       startExamTimer() {
         if (this.testSession.timerInterval) clearInterval(this.testSession.timerInterval);
-        if (this.testSession.durationSeconds <= 0) return; // No time limit
+        if (this.testSession.durationSeconds <= 0) return;
 
         const timerDisplay = document.getElementById('timer-display');
         let remaining = this.testSession.durationSeconds;
@@ -1518,7 +1541,6 @@
         });
       },
 
-      // Chỉ số câu đầu tiên chưa làm đúng (luyện tập: không được nhảy qua câu này)
       firstUnlockedIndex() {
         const ses = this.testSession;
         const i = ses.questions.findIndex((_, k) => !ses.isLocked[k]);
@@ -1542,7 +1564,6 @@
         }
       },
 
-      // Luyện tập: chỉ hiện đúng 1 câu, ẩn các câu còn lại
       showQuestion(idx) {
         const ses = this.testSession;
         ses.currentIndex = idx;
@@ -1555,7 +1576,6 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Viền đánh dấu câu đang làm trong mục lục
         const ring = ['ring-2', 'ring-brand-500', 'ring-offset-1'];
         ses.questions.forEach((_, i) => {
           const b = document.getElementById(`palette-btn-${i}`);
@@ -1581,7 +1601,6 @@
         this.testSession.userAnswers[qIndex][subIndex] = val;
         this.testSession.currentIndex = qIndex;
 
-        // Check if all subitems are answered
         const currentQ = this.testSession.questions[qIndex];
         const answers = this.testSession.userAnswers[qIndex];
         if (Object.keys(answers).length === currentQ.subQuestions.length) {
@@ -1600,12 +1619,10 @@
         btn.classList.remove('bg-slate-100', 'bg-brand-600', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-400', 'text-white', 'text-slate-900');
 
         if (locked && wrong > 0) {
-          // Đã làm đúng nhưng từng sai -> VÀNG (vẫn nhớ số lần sai)
           btn.classList.add('bg-amber-400', 'text-slate-900');
         } else if (locked) {
           btn.classList.add('bg-emerald-500', 'text-white');
         } else if (wrong > 0) {
-          // Đang sai, chưa sửa được -> ĐỎ (đổi lựa chọn vẫn giữ đỏ cho đến khi đúng)
           btn.classList.add('bg-rose-500', 'text-white');
         } else if (state === 'answered') {
           btn.classList.add('bg-brand-600', 'text-white');
@@ -1615,7 +1632,6 @@
         btn.title = wrong > 0 ? `Sai ${wrong} lần` : '';
       },
 
-      // ---------------- PRACTICE MODE: CHECK BUTTON LOGIC ----------------
       checkCurrentPracticeQuestion() {
         const idx = this.testSession.currentIndex;
         const q = this.testSession.questions[idx];
@@ -1643,7 +1659,6 @@
         const badge = document.getElementById(`q-status-badge-${idx}`);
 
         if (isCorrect) {
-          // CORRECT ANSWER
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
           this.showToast('Chính xác! Làm rất tốt.', 'success');
           this.testSession.isLocked[idx] = true;
@@ -1665,16 +1680,13 @@
             }
           }
 
-          // Auto scroll to next question if available
           if (idx + 1 < this.testSession.questions.length) {
             setTimeout(() => {
-              // chỉ chuyển nếu người dùng vẫn đang ở câu này
               if (this.testSession && this.testSession.currentIndex === idx) {
                 this.showQuestion(idx + 1);
               }
             }, 1200);
           } else {
-            // Check if all questions are finished
             const allLocked = this.testSession.questions.every((_, i) => this.testSession.isLocked[i]);
             if (allLocked) {
               setTimeout(() => {
@@ -1684,7 +1696,6 @@
             }
           }
         } else {
-          // WRONG ANSWER
           this.testSession.wrongAttempts[idx] = (this.testSession.wrongAttempts[idx] || 0) + 1;
           this.showToast('Chưa chính xác! Hãy suy nghĩ và thử lại.', 'error');
           this.updatePaletteButton(idx, 'wrong');
@@ -1700,7 +1711,6 @@
         }
       },
 
-      // ---------------- FINISH & REVIEW ENGINE ----------------
       async finishExam(askConfirm) {
         if (askConfirm && this.selectedMode === 'exam') {
           const totalQ = this.testSession.questions.length;
@@ -1712,7 +1722,6 @@
 
         if (this.testSession.timerInterval) clearInterval(this.testSession.timerInterval);
 
-        // Grade calculation
         let totalScore = 0;
         let correctCount = 0;
         const totalQuestions = this.testSession.questions.length;
@@ -1734,7 +1743,6 @@
               q.subQuestions.forEach((sub, sIdx) => {
                 if (userAns[sIdx] === sub.correctAnswer) subCorrectCount++;
               });
-              // Proportional True/False grading (Vietnam standard: 1->0.1, 2->0.25, 3->0.5, 4->1.0 full)
               if (subCorrectCount === q.subQuestions.length) {
                 correctCount++;
               } else if (subCorrectCount > 0) {
@@ -1750,14 +1758,12 @@
         const secs = durationSec % 60;
         const durationText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-        // Populate Result View
         document.getElementById('res-score').innerText = totalScore;
         document.getElementById('res-correct-count').innerText = `${Math.floor(correctCount)}/${totalQuestions}`;
         document.getElementById('res-accuracy').innerText = `${((correctCount / totalQuestions) * 100).toFixed(0)}%`;
         document.getElementById('res-wrong-attempts').innerText = totalMistakes;
         document.getElementById('res-duration').innerText = durationText;
 
-        // Danh sách câu đã sai và số lần sai (theo số thứ tự hiển thị lúc làm bài)
         const wrongList = Object.entries(this.testSession.wrongAttempts)
           .filter(([, c]) => c > 0)
           .map(([i, c]) => ({ no: Number(i) + 1, count: c }))
@@ -1775,7 +1781,6 @@
           sumEl.innerHTML = '';
         }
 
-        // Save submission record
         const submissionPayload = {
           id: 'sub_' + Date.now(),
           quizId: this.testSession.quizId,
@@ -1793,7 +1798,7 @@
         };
 
         this.saveSubmissionLocally(submissionPayload);
-        this.saveSubmissionToCloud(submissionPayload);
+        await this.saveSubmissionToCloud(submissionPayload);
 
         this.navTo('result');
       },
@@ -1809,12 +1814,16 @@
       },
 
       async saveSubmissionToCloud(sub) {
-        if (this.supabaseClient) {
-          await this.supabaseClient.from('results').insert({
+        if (!this.supabaseClient) return;
+        try {
+          const { error } = await this.supabaseClient.from('results').insert({
             id: sub.id,
             quiz_id: sub.quizId,
             data: sub
           });
+          if (error) console.error("Lỗi gửi kết quả lên Cloud:", error);
+        } catch(e) {
+          console.error("Lỗi mạng Supabase:", e);
         }
       },
 
@@ -1899,24 +1908,28 @@
 
       // ---------------- TEACHER SUBMISSIONS VIEWER ----------------
       async viewSubmissions(quizId) {
-        document.getElementById('submission-quiz-title').innerText = `Kết quả làm bài (Mã: ${quizId})`;
+        document.getElementById('submission-quiz-title').innerText = `Kết quả nộp bài (Mã: ${quizId})`;
         const tbody = document.getElementById('submission-table-body');
         const emptyMsg = document.getElementById('no-submissions-msg');
         tbody.innerHTML = '';
 
         let list = [];
 
-        // Check local first
         try {
           const localSub = JSON.parse(localStorage.getItem('azota_submissions') || '[]');
           list = localSub.filter(s => s.quizId === quizId);
         } catch(e) {}
 
-        // Check Cloud if connected
         if (this.supabaseClient) {
-          const { data } = await this.supabaseClient.from('results').select('data').eq('quiz_id', quizId);
-          if (data && data.length > 0) {
-            list = data.map(d => d.data);
+          this.showToast('Đang tải điểm từ Cloud...', 'info');
+          const { data, error } = await this.supabaseClient.from('results').select('data').eq('quiz_id', quizId);
+          if (!error && data && data.length > 0) {
+            // Hợp nhất danh sách không trùng lặp id
+            const cloudItems = data.map(d => d.data);
+            const map = new Map();
+            list.forEach(item => map.set(item.id, item));
+            cloudItems.forEach(item => map.set(item.id, item));
+            list = Array.from(map.values());
           }
         }
 
@@ -1924,6 +1937,7 @@
           emptyMsg.classList.remove('hidden');
         } else {
           emptyMsg.classList.add('hidden');
+          list.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
           list.forEach(row => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50 transition";
@@ -1950,7 +1964,7 @@
 
       exportSubmissionsCSV() {
         const tbody = document.getElementById('submission-table-body');
-        let csvContent = "data:text/csv;charset=utf-8,Họ và tên,Lớp,Hình thức,Điểm,Số câu đúng,Số lần sai,Thời gian,Ngày nộp\n";
+        let csvContent = "\uFEFF" + "Họ và tên,Lớp,Hình thức,Điểm,Số câu đúng,Số lần sai,Thời gian,Ngày nộp\n";
 
         const rows = tbody.querySelectorAll('tr');
         if (rows.length === 0) {
@@ -1963,16 +1977,15 @@
           csvContent += cols.join(",") + "\n";
         });
 
-        const encodedUri = encodeURI(csvContent);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.href = URL.createObjectURL(blob);
         link.setAttribute("download", `Ket_Qua_Hoc_Sinh_${Date.now()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       },
 
-      // ---------------- UTILITIES & HELPERS ----------------
       openModal(id) {
         document.getElementById(id).classList.remove('hidden');
       },
@@ -2007,11 +2020,10 @@
 
         setTimeout(() => {
           toast.classList.add('hidden');
-        }, 2600);
+        }, 3200);
       }
     };
 
-    // Run on loaded
     window.addEventListener('DOMContentLoaded', () => {
       app.init();
     });
