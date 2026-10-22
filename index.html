@@ -483,8 +483,8 @@
       },
 
       initSupabase() {
-        let url = (localStorage.getItem('azota_supa_url') || this.DEFAULT_URL).trim();
-        let key = (localStorage.getItem('azota_supa_key') || this.DEFAULT_KEY).trim();
+       const HARDCODED_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
+       const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bGV2YXB3ZXFub3h4Y3RqZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODg2NzYsImV4cCI6MjEwODA2NDY3Nn0.LHrsFhLsrxT4O_yPvjYVdUVSpbo0yDXtvphoZGchrV8";
 
         const badgeText = document.getElementById('cloud-badge-text');
         const badgeBtn = document.getElementById('btn-cloud-config');
