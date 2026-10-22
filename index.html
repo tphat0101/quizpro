@@ -493,6 +493,8 @@
       },
 
       initSupabase() {
+        const DEFAULT_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
+        const DEFAULT_KEY = "sb_publishable_8jOMTGpl9BsMRzKcmAu9Zw_zS2TGfb8";
         const url = localStorage.getItem('azota_supa_url');
         const key = localStorage.getItem('azota_supa_key');
         if (url && key && window.supabase) {
