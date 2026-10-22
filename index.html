@@ -482,42 +482,44 @@
         localStorage.setItem('azota_quizzes', JSON.stringify(this.quizzes));
       },
 
-      initSupabase() {
-       const HARDCODED_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
-       const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bGV2YXB3ZXFub3h4Y3RqZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODg2NzYsImV4cCI6MjEwODA2NDY3Nn0.LHrsFhLsrxT4O_yPvjYVdUVSpbo0yDXtvphoZGchrV8";
+    initSupabase() {
+        // 1. CẤU HÌNH DÙNG CHUNG CHO TẤT CẢ HỌC SINH MỞ LINK
+        const HARDCODED_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
+        
+        // >>> DÁN CHUỖI ANON KEY (BẮT ĐẦU BẰNG eyJ...) CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP DƯỚI ĐÂY <<<
+        const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bGV2YXB3ZXFub3h4Y3RqZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODg2NzYsImV4cCI6MjEwODA2NDY3Nn0.LHrsFhLsrxT4O_yPvjYVdUVSpbo0yDXtvphoZGchrV8";
+
+        // Ưu tiên cấu hình trong code để học sinh không cần nhập
+        let url = HARDCODED_URL;
+        let key = HARDCODED_KEY;
+
+        // Nếu trong code chưa điền key thì mới lấy từ bộ nhớ máy
+        if (!key || key.includes("DÁN_ANON_KEY")) {
+          url = localStorage.getItem('azota_supa_url') || "";
+          key = localStorage.getItem('azota_supa_key') || "";
+        }
 
         const badgeText = document.getElementById('cloud-badge-text');
         const badgeBtn = document.getElementById('btn-cloud-config');
-        document.getElementById('cfg-supa-url').value = url;
-        document.getElementById('cfg-supa-key').value = key;
+        if (document.getElementById('cfg-supa-url')) document.getElementById('cfg-supa-url').value = url;
+        if (document.getElementById('cfg-supa-key')) document.getElementById('cfg-supa-key').value = key;
 
-        // Kiểm tra tính hợp lệ sơ bộ của key: phải bắt đầu bằng eyJ
-        if (url && key && window.supabase && url.startsWith('http')) {
-          if (!key.startsWith('eyJ')) {
-            console.warn("Anon Key không hợp lệ (không bắt đầu bằng eyJ). Supabase sẽ bị vô hiệu hóa.");
-            badgeText.innerText = "Lỗi Key Cloud";
-            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-rose-600 border-rose-300 bg-rose-50";
-            this.supabaseClient = null;
-            return;
-          }
-
+        if (url && key && window.supabase && url.startsWith('http') && key.startsWith('eyJ')) {
           try {
             this.supabaseClient = window.supabase.createClient(url, key);
-            badgeText.innerText = "Cloud đã bật";
-            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-emerald-700 border-emerald-300 bg-emerald-50";
+            if (badgeText) badgeText.innerText = "Cloud đã bật";
+            if (badgeBtn) badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-emerald-700 border-emerald-300 bg-emerald-50";
+            console.log("Supabase đã kết nối tự động thành công!");
           } catch(e) {
             console.error("Lỗi khởi tạo Supabase:", e);
             this.supabaseClient = null;
-            badgeText.innerText = "Lỗi kết nối";
-            badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-rose-600 border-rose-300 bg-rose-50";
           }
         } else {
-          badgeText.innerText = "Chưa nối Cloud";
-          badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-slate-600 border-slate-300 hover:bg-slate-50";
+          if (badgeText) badgeText.innerText = "Chưa có Key";
           this.supabaseClient = null;
         }
       },
-
+      
       async testSupabaseConnection() {
         const url = document.getElementById('cfg-supa-url').value.trim();
         const key = document.getElementById('cfg-supa-key').value.trim();
