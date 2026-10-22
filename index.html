@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hệ Thống Trắc Nghiệm Trực Tuyến Phát Cao</title>
+  <title>Hệ Thống Trắc Nghiệm Trực Tuyến Tương Tự Azota</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,7 @@
           <i class="fa-solid fa-graduation-cap text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight text-slate-900">Phát<span class="text-brand-600">Cao</span></h1>
+          <h1 class="font-bold text-lg leading-tight text-slate-900">Azota<span class="text-brand-600">Lite</span></h1>
           <p class="text-xs text-slate-500">Khảo thí & Luyện tập Online</p>
         </div>
       </div>
@@ -482,44 +482,38 @@
         localStorage.setItem('azota_quizzes', JSON.stringify(this.quizzes));
       },
 
-    initSupabase() {
-        // 1. CẤU HÌNH DÙNG CHUNG CHO TẤT CẢ HỌC SINH MỞ LINK
+      initSupabase() {
+        // CẤU HÌNH CỐ ĐỊNH ĐỂ MÁY NÀO MỞ CŨNG CHẠY ĐƯỢC
         const HARDCODED_URL = "https://jzlevapweqnoxxctjfri.supabase.co";
         
-        // >>> DÁN CHUỖI ANON KEY (BẮT ĐẦU BẰNG eyJ...) CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP DƯỚI ĐÂY <<<
+        // BẠN DÁN CHUỖI ANON KEY DÀI BẮT ĐẦU BẰNG eyJ... VÀO GIỮA 2 DẤU NGOẶC KÉP NÀY:
         const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bGV2YXB3ZXFub3h4Y3RqZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODg2NzYsImV4cCI6MjEwODA2NDY3Nn0.LHrsFhLsrxT4O_yPvjYVdUVSpbo0yDXtvphoZGchrV8";
 
-        // Ưu tiên cấu hình trong code để học sinh không cần nhập
+        // Tự động lấy key cố định hoặc key trong máy
         let url = HARDCODED_URL;
-        let key = HARDCODED_KEY;
-
-        // Nếu trong code chưa điền key thì mới lấy từ bộ nhớ máy
-        if (!key || key.includes("DÁN_ANON_KEY")) {
-          url = localStorage.getItem('azota_supa_url') || "";
-          key = localStorage.getItem('azota_supa_key') || "";
-        }
+        let key = (HARDCODED_KEY && !HARDCODED_KEY.includes("THAY_BANG_KEY")) ? HARDCODED_KEY : (localStorage.getItem('azota_supa_key') || "");
 
         const badgeText = document.getElementById('cloud-badge-text');
         const badgeBtn = document.getElementById('btn-cloud-config');
         if (document.getElementById('cfg-supa-url')) document.getElementById('cfg-supa-url').value = url;
         if (document.getElementById('cfg-supa-key')) document.getElementById('cfg-supa-key').value = key;
 
-        if (url && key && window.supabase && url.startsWith('http') && key.startsWith('eyJ')) {
+        if (url && key && window.supabase && key.startsWith('eyJ')) {
           try {
             this.supabaseClient = window.supabase.createClient(url, key);
             if (badgeText) badgeText.innerText = "Cloud đã bật";
             if (badgeBtn) badgeBtn.className = "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition text-emerald-700 border-emerald-300 bg-emerald-50";
-            console.log("Supabase đã kết nối tự động thành công!");
+            console.log("Supabase đã sẵn sàng cho tất cả thiết bị!");
           } catch(e) {
             console.error("Lỗi khởi tạo Supabase:", e);
             this.supabaseClient = null;
           }
         } else {
-          if (badgeText) badgeText.innerText = "Chưa có Key";
+          console.warn("Chưa có Anon Key hợp lệ.");
           this.supabaseClient = null;
         }
       },
-      
+
       async testSupabaseConnection() {
         const url = document.getElementById('cfg-supa-url').value.trim();
         const key = document.getElementById('cfg-supa-key').value.trim();
@@ -585,6 +579,12 @@
 
         const quizId = urlParams.get('quizId');
         if (quizId) {
+          // Chờ tối đa 3 giây để Supabase nạp xong trên mạng di động của học sinh
+          let wait = 0;
+          while (!this.supabaseClient && wait < 15) {
+            await new Promise(r => setTimeout(r, 200));
+            wait++;
+          }
           await this.loadQuizFromCloud(quizId);
           return;
         }
@@ -605,7 +605,7 @@
           this.renderQuizList();
         }
       },
-
+      
       async loadQuizFromCloud(quizId) {
         if (!this.supabaseClient) {
           alert('Thiết bị này chưa nhận được cấu hình Supabase hợp lệ để tải đề thi!');
