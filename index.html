@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hệ Thống Trắc Nghiệm Fat IQ </title>
+  <title>Hệ Thống Trắc Nghiệm Trực Tuyến Tương Tự Azota</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,7 @@
           <i class="fa-solid fa-graduation-cap text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight text-slate-900">Fat<span class="text-brand-600">IQ</span></h1>
+          <h1 class="font-bold text-lg leading-tight text-slate-900">Azota<span class="text-brand-600">Lite</span></h1>
           <p class="text-xs text-slate-500">Khảo thí & Luyện tập Online</p>
         </div>
       </div>
@@ -802,11 +802,19 @@
 
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const arrayBuffer = e.target.result;
+          let arrayBuffer = e.target.result;
           try {
+            // Chuyển công thức Equation của Word (OMML) thành văn bản để không bị mất
+            arrayBuffer = await this.convertOmmlInDocx(arrayBuffer);
             const marks = await this.extractDocxMarks(arrayBuffer);
-            const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+            this._wmfFailed = 0;
+            const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
+              convertImage: mammoth.images.imgElement(image => this.convertDocxImage(image))
+            });
             const html = result.value;
+            if (this._wmfFailed > 0) {
+              setTimeout(() => this.showToast(`${this._wmfFailed} công thức dạng ảnh (MathType) chưa hiển thị được. Hãy chuyển sang Equation của Word (MathType > Convert Equations) rồi nhập lại.`, 'warning'), 600);
+            }
             this.parseImportedHtml(html, file.name.replace(/\.[^/.]+$/, ""), marks);
           } catch (err) {
             console.error(err);
@@ -815,6 +823,227 @@
           input.value = '';
         };
         reader.readAsArrayBuffer(file);
+      },
+
+      // ---------- ẢNH TRONG WORD: CHUYỂN WMF/EMF (công thức MathType) -> SVG ----------
+      _metafileLoading: null,
+      loadScriptOnce(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = () => resolve(true);
+          s.onerror = () => { s.remove(); reject(new Error('load fail ' + src)); };
+          document.head.appendChild(s);
+        });
+      },
+
+      // Nạp thư viện đọc WMF/EMF (thử lần lượt nhiều nguồn CDN)
+      ensureMetafileLib() {
+        if (this._metafileLoading) return this._metafileLoading;
+        this._metafileLoading = (async () => {
+          const bases = [
+            'https://cdn.jsdelivr.net/npm/rtf.js@3.0.3/dist/',
+            'https://unpkg.com/rtf.js@3.0.3/dist/',
+            'https://cdn.jsdelivr.net/npm/rtf.js/dist/',
+            'https://unpkg.com/rtf.js/dist/'
+          ];
+          const names = [['WMFJS', 'WMFJS.bundle.min.js'], ['EMFJS', 'EMFJS.bundle.min.js']];
+          for (const [g, file] of names) {
+            if (window[g]) continue;
+            for (const b of bases) {
+              try { await this.loadScriptOnce(b + file); if (window[g]) break; } catch (e) { /* thử nguồn khác */ }
+            }
+          }
+          return { wmf: !!window.WMFJS, emf: !!window.EMFJS };
+        })();
+        return this._metafileLoading;
+      },
+
+      metafileToSvgDataUri(buf, kind) {
+        const dv = new DataView(buf);
+        let w = 120, h = 30;
+        if (kind === 'wmf') {
+          if (dv.getUint32(0, true) === 0x9AC6CDD7) {
+            const inch = dv.getUint16(14, true) || 1440;
+            w = (dv.getInt16(10, true) - dv.getInt16(6, true)) / inch * 96;
+            h = (dv.getInt16(12, true) - dv.getInt16(8, true)) / inch * 96;
+          }
+        } else {
+          const l = dv.getInt32(24, true), t = dv.getInt32(28, true), r = dv.getInt32(32, true), b = dv.getInt32(36, true);
+          w = (r - l) / 100 / 25.4 * 96;
+          h = (b - t) / 100 / 25.4 * 96;
+        }
+        if (!(w > 1 && h > 1) || w > 2000 || h > 2000) { w = 120; h = 30; }
+        w = Math.max(2, Math.round(w));
+        h = Math.max(2, Math.round(h));
+
+        const settings = { width: w + 'px', height: h + 'px', xExt: w + 'px', yExt: h + 'px', mapMode: 8 };
+        let svgEl;
+        if (kind === 'wmf') {
+          WMFJS.loggingEnabled && WMFJS.loggingEnabled(false);
+          svgEl = new WMFJS.Renderer(buf).render(settings);
+        } else {
+          EMFJS.loggingEnabled && EMFJS.loggingEnabled(false);
+          svgEl = new EMFJS.Renderer(buf).render(settings);
+        }
+        let svgStr = svgEl.outerHTML || new XMLSerializer().serializeToString(svgEl);
+        if (!/xmlns=/.test(svgStr)) svgStr = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        return { src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr), w, h };
+      },
+
+      async convertDocxImage(image) {
+        const type = (image.contentType || '').toLowerCase();
+        const buf = await image.read();
+        const ab = buf instanceof ArrayBuffer ? buf : (buf.buffer ? buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) : buf);
+
+        const isWmf = /wmf|x-wmf/.test(type);
+        const isEmf = /emf|x-emf/.test(type);
+
+        if (isWmf || isEmf) {
+          try {
+            const libs = await this.ensureMetafileLib();
+            if ((isWmf && libs.wmf) || (isEmf && libs.emf)) {
+              const r = this.metafileToSvgDataUri(ab, isWmf ? 'wmf' : 'emf');
+              // img inline, cao theo dòng chữ
+              return { src: r.src, alt: 'công thức', style: `height:${r.h}px;width:${r.w}px;vertical-align:middle;max-width:100%;` };
+            }
+          } catch (err) {
+            console.warn('Không vẽ được ảnh WMF/EMF', err);
+          }
+          this._wmfFailed = (this._wmfFailed || 0) + 1;
+          const ph = '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="22"><rect width="110" height="22" rx="4" fill="#fef3c7" stroke="#f59e0b"/><text x="55" y="15" font-size="11" text-anchor="middle" fill="#92400e" font-family="Arial">[công thức]</text></svg>';
+          return { src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ph), alt: '[công thức]' };
+        }
+
+        // Ảnh thường (png, jpg, gif...)
+        let bin = '';
+        const u8 = new Uint8Array(ab);
+        for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+        return { src: 'data:' + (type || 'image/png') + ';base64,' + btoa(bin) };
+      },
+
+      // ---------- CHUYỂN CÔNG THỨC WORD (OMML) -> VĂN BẢN ----------
+      ommlToText(node) {
+        const SUB = { '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊','-':'₋','−':'₋','=':'₌','(':'₍',')':'₎','a':'ₐ','e':'ₑ','h':'ₕ','i':'ᵢ','j':'ⱼ','k':'ₖ','l':'ₗ','m':'ₘ','n':'ₙ','o':'ₒ','p':'ₚ','r':'ᵣ','s':'ₛ','t':'ₜ','u':'ᵤ','v':'ᵥ','x':'ₓ' };
+        const SUP = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','−':'⁻','=':'⁼','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ' };
+        const toScript = (s, map, fallbackPrefix) => {
+          const t = s.trim();
+          if (!t) return '';
+          const all = Array.from(t).every(ch => map[ch]);
+          if (all) return Array.from(t).map(ch => map[ch]).join('');
+          return fallbackPrefix + (t.length > 1 ? '(' + t + ')' : t);
+        };
+        const kids = (el, name) => Array.from(el.children).filter(c => c.localName === name);
+        const kid = (el, name) => kids(el, name)[0];
+        const T = (el) => el ? this.ommlToText(el) : '';
+        const allText = (el) => Array.from(el.children)
+          .filter(c => !/Pr$/.test(c.localName))
+          .map(c => this.ommlToText(c)).join('');
+        const chrVal = (el, prName, chrName, def) => {
+          const pr = kid(el, prName);
+          const chr = pr ? kid(pr, chrName) : null;
+          const v = chr ? (chr.getAttribute('m:val') || chr.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/math', 'val')) : null;
+          return v === null || v === undefined ? def : v;
+        };
+
+        switch (node.localName) {
+          case 't': return node.textContent;
+          case 'r': return kids(node, 't').map(t => t.textContent).join('');
+          case 'f': {
+            const n = T(kid(node, 'num')), d = T(kid(node, 'den'));
+            const wrap = s => (s.length > 1 && /[+\-−*\/=\s]/.test(s)) ? '(' + s + ')' : s;
+            return wrap(n) + '/' + wrap(d);
+          }
+          case 'sSub': return T(kid(node, 'e')) + toScript(T(kid(node, 'sub')), SUB, '_');
+          case 'sSup': return T(kid(node, 'e')) + toScript(T(kid(node, 'sup')), SUP, '^');
+          case 'sSubSup': return T(kid(node, 'e')) + toScript(T(kid(node, 'sub')), SUB, '_') + toScript(T(kid(node, 'sup')), SUP, '^');
+          case 'sPre': return toScript(T(kid(node, 'sup')), SUP, '^') + toScript(T(kid(node, 'sub')), SUB, '_') + T(kid(node, 'e'));
+          case 'rad': {
+            const deg = T(kid(node, 'deg')).trim();
+            const e = T(kid(node, 'e'));
+            return (deg ? toScript(deg, SUP, '^') : '') + '√' + (e.length > 1 ? '(' + e + ')' : e);
+          }
+          case 'nary': {
+            const chr = chrVal(node, 'naryPr', 'chr', '∫');
+            const sub = T(kid(node, 'sub')).trim(), sup = T(kid(node, 'sup')).trim();
+            let s = chr;
+            if (sub) s += toScript(sub, SUB, '_');
+            if (sup) s += toScript(sup, SUP, '^');
+            return s + T(kid(node, 'e'));
+          }
+          case 'd': {
+            const beg = chrVal(node, 'dPr', 'begChr', '(');
+            const end = chrVal(node, 'dPr', 'endChr', ')');
+            const sep = chrVal(node, 'dPr', 'sepChr', '|');
+            return beg + kids(node, 'e').map(e => T(e)).join(sep) + end;
+          }
+          case 'func': return T(kid(node, 'fName')) + ' ' + T(kid(node, 'e'));
+          case 'limLow': return T(kid(node, 'e')) + toScript(T(kid(node, 'lim')), SUB, '_');
+          case 'limUpp': return T(kid(node, 'e')) + toScript(T(kid(node, 'lim')), SUP, '^');
+          case 'acc': {
+            const chr = chrVal(node, 'accPr', 'chr', '\u0302');
+            return T(kid(node, 'e')) + chr;
+          }
+          case 'bar': return T(kid(node, 'e')) + '\u0305';
+          case 'eqArr': return kids(node, 'e').map(e => T(e)).join('  ');
+          case 'm': return kids(node, 'mr').map(mr => kids(mr, 'e').map(e => T(e)).join(' ')).join('; ');
+          default: return allText(node);
+        }
+      },
+
+      async convertOmmlInDocx(arrayBuffer) {
+        try {
+          const zip = await JSZip.loadAsync(arrayBuffer);
+          const docFile = zip.file('word/document.xml');
+          if (!docFile) return arrayBuffer;
+          const xmlStr = await docFile.async('string');
+          if (!/<m:oMath[\s>]/.test(xmlStr)) return arrayBuffer; // không có công thức
+
+          const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+          const M = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
+          const xml = new DOMParser().parseFromString(xmlStr, 'application/xml');
+
+          const makeRun = (text, rPrSrc) => {
+            const r = xml.createElementNS(W, 'w:r');
+            if (rPrSrc) r.appendChild(rPrSrc.cloneNode(true));
+            const t = xml.createElementNS(W, 'w:t');
+            t.setAttribute('xml:space', 'preserve');
+            t.textContent = text;
+            r.appendChild(t);
+            return r;
+          };
+
+          // Lấy định dạng (màu / đậm) từ run đầu tiên của công thức
+          const findRPr = (el) => {
+            const mr = el.getElementsByTagNameNS(M, 'r')[0];
+            if (!mr) return null;
+            return Array.from(mr.children).find(c => c.localName === 'rPr' && c.namespaceURI === W) || null;
+          };
+
+          const maths = Array.from(xml.getElementsByTagNameNS(M, 'oMath'));
+          maths.forEach(om => {
+            const parent = om.parentNode;
+            if (!parent) return;
+            const text = this.ommlToText(om);
+            const run = makeRun(text, findRPr(om));
+            // oMath nằm trong oMathPara -> thay cả oMathPara ở lần xử lý oMath đầu tiên
+            if (parent.localName === 'oMathPara') {
+              parent.parentNode.insertBefore(run, parent);
+              parent.removeChild(om);
+              if (!Array.from(parent.children).some(c => c.localName === 'oMath')) {
+                parent.parentNode.removeChild(parent);
+              }
+            } else {
+              parent.replaceChild(run, om);
+            }
+          });
+
+          zip.file('word/document.xml', new XMLSerializer().serializeToString(xml));
+          return await zip.generateAsync({ type: 'arraybuffer' });
+        } catch (e) {
+          console.warn('Không chuyển được công thức Word, dùng file gốc', e);
+          return arrayBuffer;
+        }
       },
 
       async handlePdfUpload(input) {
@@ -1245,7 +1474,7 @@
                 <div class="flex items-center gap-3 p-2 rounded-xl border ${opt.isCorrect ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 bg-white'}">
                   <input type="radio" name="correct_q_${qIndex}" ${opt.isCorrect ? 'checked' : ''} onchange="app.setMcqCorrect(${qIndex}, ${optIdx})" class="w-4 h-4 text-emerald-600 cursor-pointer">
                   <span class="font-bold text-xs text-slate-500 w-4">${opt.label}.</span>
-                  <div contenteditable="true" onblur="app.currentQuiz.questions[${qIndex}].options[${optIdx}].content = this.innerText" class="flex-1 text-sm outline-none">${opt.content}</div>
+                  <div contenteditable="true" onblur="app.currentQuiz.questions[${qIndex}].options[${optIdx}].content = this.innerHTML" class="flex-1 text-sm outline-none">${opt.content}</div>
                   <span class="text-[11px] font-medium ${opt.isCorrect ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${opt.isCorrect ? 'Đáp án Đúng' : ''}</span>
                 </div>
               `;
@@ -1258,7 +1487,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/50">
                   <div class="flex items-start gap-2 flex-1">
                     <span class="font-bold text-xs text-slate-700 uppercase mt-0.5">${sub.label})</span>
-                    <div contenteditable="true" onblur="app.currentQuiz.questions[${qIndex}].subQuestions[${subIdx}].content = this.innerText" class="text-sm outline-none flex-1">${sub.content}</div>
+                    <div contenteditable="true" onblur="app.currentQuiz.questions[${qIndex}].subQuestions[${subIdx}].content = this.innerHTML" class="text-sm outline-none flex-1">${sub.content}</div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                     <label class="inline-flex items-center text-xs gap-1 cursor-pointer">
