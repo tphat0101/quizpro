@@ -1103,7 +1103,52 @@
         clone.querySelectorAll('strong, b, u, em, i, span').forEach(el => {
           if (!el.textContent.trim() && !el.querySelector('img')) el.remove();
         });
-        return clone.innerHTML.trim();
+        return clone.innerHTML.replace(/(?:&nbsp;|\s)+$/g, '').trim();
+      },
+
+      // Tìm dấu A. B. C. D. liên tiếp trong một đoạn (đáp án nằm cùng dòng, cách nhau bằng Tab/khoảng trắng)
+      findOptionMarkers(text) {
+        // Chấp nhận chuỗi liên tiếp bắt đầu từ bất kỳ chữ nào (vd đoạn chỉ chứa "C. ... D. ...")
+        const re = /(?<![A-Za-z0-9])([A-D])\s*[.)]/g;
+        const chain = [];
+        let want = null, m;
+        while ((m = re.exec(text))) {
+          if (want === null || m[1] === want) {
+            chain.push({ label: m[1], index: m.index, end: m.index + m[0].length });
+            want = String.fromCharCode(m[1].charCodeAt(0) + 1);
+            if (want > 'D') break;
+          } else if (chain.length === 1) {
+            // chuỗi mới bắt đầu lại từ ký tự này
+            chain.length = 0;
+            chain.push({ label: m[1], index: m.index, end: m.index + m[0].length });
+            want = String.fromCharCode(m[1].charCodeAt(0) + 1);
+          }
+        }
+        return chain.length >= 2 ? chain : [];
+      },
+
+      // Tách một đoạn chứa nhiều đáp án thành các đoạn riêng (giữ nguyên ảnh/định dạng)
+      splitInlineOptions(p) {
+        const d = p.ownerDocument;
+        const walker = d.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        let full = '';
+        while (walker.nextNode()) { nodes.push({ node: walker.currentNode, start: full.length }); full += walker.currentNode.nodeValue; }
+        const mk = this.findOptionMarkers(full);
+        if (!mk.length) return [p];
+        const pieces = [];
+        for (let i = mk.length - 1; i >= 0; i--) {
+          let hit = nodes[0];
+          for (const n of nodes) { if (n.start <= mk[i].index) hit = n; else break; }
+          const range = d.createRange();
+          range.setStart(hit.node, mk[i].index - hit.start);
+          range.setEnd(p, p.childNodes.length);
+          const np = d.createElement('p');
+          np.appendChild(range.extractContents());
+          p.parentNode.insertBefore(np, p.nextSibling);
+          pieces.unshift(np);
+        }
+        return [p].concat(pieces);
       },
 
       async extractDocxMarks(arrayBuffer) {
@@ -1160,15 +1205,18 @@
           const paras = Array.from(xml.getElementsByTagNameNS(W, 'p'));
           paras.forEach(para => {
             let text = '', strong = false, weak = false, labelWeak = false;
+            const segs = [];
             Array.from(para.getElementsByTagNameNS(W, 'r')).forEach(r => {
               const t = Array.from(r.getElementsByTagNameNS(W, 't')).map(x => x.textContent).join('');
               if (!t.trim()) return;
+              const segStart = text.length;
               text += t;
               const isLabelRun = /^\s*[A-Za-z][\.\)]\s*$/.test(t);
               const rPr = child(r, 'rPr');
               const direct = rprFlags(rPr);
               const rStyle = child(rPr, 'rStyle');
               const viaStyle = rStyle ? styleFlags(attr(rStyle, 'val')) : { strong: false, weak: false };
+              segs.push({ s: segStart, e: text.length, strong: direct.strong || viaStyle.strong, weak: direct.weak || viaStyle.weak });
               if (direct.strong || viaStyle.strong) strong = true;
               if (direct.weak || viaStyle.weak) {
                 if (isLabelRun) labelWeak = true; else weak = true;
@@ -1186,7 +1234,23 @@
                 if (pf.weak) weak = true;
               }
             }
-            marks.push({ key: key.slice(0, 40), strong, weak, lw: labelWeak });
+            // Nhiều đáp án A. B. C. D. nằm chung một đoạn -> tách cờ đánh dấu theo từng đáp án
+            let opts = null;
+            const mk = this.findOptionMarkers(text);
+            if (mk.length) {
+              opts = mk.map((m, i) => {
+                const end = i + 1 < mk.length ? mk[i + 1].index : text.length;
+                let st = false, wk = false, lw = false;
+                segs.forEach(sg => {
+                  const lo = Math.max(sg.s, m.index), hi = Math.min(sg.e, m.end);
+                  if (hi > lo) { if (sg.weak) lw = true; if (sg.strong) st = true; }
+                  const bl = Math.max(sg.s, m.end), bh = Math.min(sg.e, end);
+                  if (bh > bl && text.slice(bl, bh).trim()) { if (sg.strong) st = true; if (sg.weak) wk = true; }
+                });
+                return { strong: st, weak: wk, lw };
+              });
+            }
+            marks.push({ key: key.slice(0, 40), strong, weak, lw: labelWeak, opts });
           });
         } catch (e) {
           console.warn('Không đọc được định dạng màu từ docx', e);
@@ -1212,37 +1276,79 @@
         let currentQ = null;
         let mi = 0;
 
-        const qRegex = /^(Câu\s*\d+|Bài\s*\d+|\d+)\s*[:.]/i;
-        const stemLabelRe = /^\s*(?:(?:Câu|Bài)\s*\d+|\d+)\s*[:.]\s*/i;
-        const optRegex = /^([A-D])[\.\)]\s*(.*)/i;
+        // Cho phép số câu dạng "15.1", "17.2:" ; "Question 5 ." (có khoảng trắng trước dấu chấm)
+        const qRegex = /^(?:(?:Câu|Bài|Question|Q)\s*\d+(?:\.\d+)?(?:\s*[:.)]|\s|$)|\d+(?:\.\d+)?\s*[:.)])/i;
+        const stemLabelRe = /^\s*(?:(?:Câu|Bài|Question|Q)\s*\d+(?:\.\d+)?\s*[:.)]?|\d+(?:\.\d+)?\s*[:.)])\s*/i;
+        const optRegexUpper = /^([A-D])\s*[\.\)]\s*(.*)/;
+        const optRegexAny = /^([A-D])\s*[\.\)]\s*(.*)/i;
+        const sectionRe = /^PART\s*\d+/i;
+        // "1.1 Read the following passage ..." -> tiêu đề đoạn văn, các đoạn kế tiếp là bài đọc chung cho nhiều câu
+        const passageHeadRe = /^\s*\d+\.\d+\s*[:.)]?\s*(?:Read|Mark|Choose|Fill|Complete)\b.*(?:passage|text|following)/i;
+        let passageHtml = '';
+        let collecting = false;
+        let passageParts = [];
+        let skippedNoOpt = 0;
         const tfSubRegex = /^([a-d])[\.\)]\s*(.*)/i;
         const tfHeaderRegex = /đúng\s*(?:[-\/]|hay|hoặc|or|và)?\s*sai/i;
         const labelOnlyRe = /^\s*[A-Za-z][\.\)]\s*$/;
 
         const started = (q) => q.type === 'mcq' ? q.options.length > 0 : q.subQuestions.length > 0;
 
+        // Gắn cờ đánh dấu (màu/đậm/gạch chân) cho từng đoạn, đồng thời tách các đáp án nằm chung một dòng
+        const items = [];
         paragraphs.forEach(p => {
+          if (p.tagName === 'TABLE') { items.push({ p, flags: null }); return; }
+          const rt = (p.textContent || '').trim();
+          let entry = null;
+          if (rt && (p.tagName === 'P' || p.tagName === 'LI')) {
+            const key = rt.replace(/\s+/g, '').toLowerCase().slice(0, 40);
+            for (let j = mi; j < Math.min(marks.length, mi + 40); j++) {
+              if (marks[j].key === key) { entry = marks[j]; mi = j + 1; break; }
+            }
+          }
+          const pieces = this.splitInlineOptions(p);
+          pieces.forEach((el, idx) => {
+            let fl = entry;
+            if (idx > 0 && entry && entry.opts && entry.opts.length === pieces.length - 1) fl = entry.opts[idx - 1];
+            items.push({ p: el, flags: fl });
+          });
+        });
+
+        // Phía sau còn đáp án in hoa A. B. ... trước khi sang câu mới không? (để phân biệt a. b. c. là nội dung đề)
+        const upperAhead = (from) => {
+          for (let k = from + 1; k < items.length; k++) {
+            const el = items[k].p;
+            if (el.tagName === 'TABLE') continue;
+            const tx = (el.textContent || '').trim();
+            if (!tx) continue;
+            if (qRegex.test(tx) || sectionRe.test(tx)) return false;
+            if (/^[A-D]\s*[.)]/.test(tx)) return true;
+          }
+          return false;
+        };
+
+        const buildPassage = () => passageParts.length
+          ? '<div style="border:1px solid #e2e8f0;background:#f8fafc;border-radius:12px;padding:12px;margin-bottom:12px;font-size:0.92em;line-height:1.65">' + passageParts.join('') + '</div>'
+          : '';
+
+        items.forEach(({ p, flags: itemFlags }, itemIdx) => {
           if (p.tagName === 'TABLE') {
-            if (currentQ && !started(currentQ)) currentQ.content += '<br>' + p.outerHTML;
+            if (collecting) passageParts.push(p.outerHTML);
+            else if (currentQ && !started(currentQ)) currentQ.content += '<br>' + p.outerHTML;
             return;
           }
 
           const rawText = (p.textContent || '').trim();
 
           if (!rawText) {
-            if (currentQ && p.querySelector('img') && !started(currentQ)) {
+            if (collecting && p.querySelector('img')) passageParts.push('<p>' + p.innerHTML + '</p>');
+            else if (currentQ && p.querySelector('img') && !started(currentQ)) {
               currentQ.content += '<br>' + p.innerHTML;
             }
             return;
           }
 
-          let flags = { strong: false, weak: false };
-          if (p.tagName === 'P' || p.tagName === 'LI') {
-            const key = rawText.replace(/\s+/g, '').toLowerCase().slice(0, 40);
-            for (let j = mi; j < Math.min(marks.length, mi + 40); j++) {
-              if (marks[j].key === key) { flags = marks[j]; mi = j + 1; break; }
-            }
-          }
+          const flags = itemFlags || { strong: false, weak: false };
           const isStrong = !!flags.strong;
           const isLW = !!flags.lw;
           let isWeak = !!flags.weak;
@@ -1250,13 +1356,43 @@
             isWeak = Array.from(p.querySelectorAll('strong, b, u')).some(el => !labelOnlyRe.test(el.textContent));
           }
 
-          if (qRegex.test(rawText)) {
+          // Sang PART mới: đóng câu hiện tại, bỏ bài đọc cũ
+          if (sectionRe.test(rawText)) {
             if (currentQ) parsedQuestions.push(currentQ);
+            currentQ = null; collecting = false; passageParts = []; passageHtml = '';
+            return;
+          }
+
+          // Tiêu đề đoạn văn (1.1 Read the following passage...) -> bắt đầu gom bài đọc
+          if (passageHeadRe.test(rawText)) {
+            if (currentQ) parsedQuestions.push(currentQ);
+            currentQ = null; collecting = true; passageParts = []; passageHtml = '';
+            return;
+          }
+
+          if (collecting && !qRegex.test(rawText)) {
+            passageParts.push(p.tagName === 'LI' ? '<p>• ' + p.innerHTML + '</p>' : '<p>' + p.innerHTML + '</p>');
+            return;
+          }
+
+          if (qRegex.test(rawText)) {
+            if (collecting) { passageHtml = buildPassage(); collecting = false; }
+            if (currentQ) parsedQuestions.push(currentQ);
+
+            let stemHtml = this.cleanOptionHtml(p, stemLabelRe, false);
+            if (passageHtml) {
+              const hasStem = stemHtml.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
+              if (!hasStem) {
+                const num = (rawText.match(/\d+(?:\.\d+)?/) || [''])[0];
+                stemHtml = '<b>Chọn đáp án đúng cho chỗ trống (' + num + ')</b>';
+              }
+              stemHtml = passageHtml + stemHtml;
+            }
 
             currentQ = {
               id: 'q_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
               type: tfHeaderRegex.test(rawText) ? 'tf' : 'mcq',
-              content: this.cleanOptionHtml(p, stemLabelRe, false),
+              content: stemHtml,
               options: [],
               subQuestions: [],
               explanation: ''
@@ -1272,7 +1408,14 @@
           }
 
           if (currentQ.type === 'mcq') {
-            const matchOpt = rawText.match(optRegex);
+            let matchOpt = rawText.match(optRegexUpper);
+            if (!matchOpt && /^[a-d]\s*[.)]/.test(rawText)) {
+              // a. b. c. d. viết thường: chỉ coi là đáp án khi không có A. B. C. D. in hoa ở phía sau
+              if (currentQ.options.length > 0 ? currentQ._lower : !upperAhead(itemIdx)) {
+                matchOpt = rawText.match(optRegexAny);
+                currentQ._lower = true;
+              }
+            }
             if (matchOpt) {
               const label = matchOpt[1].toUpperCase();
               currentQ.options.push({
@@ -1308,6 +1451,12 @@
 
         if (currentQ) parsedQuestions.push(currentQ);
 
+        // Câu không có đáp án A/B/C/D (vd: viết lại câu, điền từ tự luận) -> app chưa hỗ trợ, bỏ qua
+        const before = parsedQuestions.length;
+        parsedQuestions = parsedQuestions.filter(q => q.type === 'mcq' ? q.options.length > 0 : q.subQuestions.length > 0);
+        skippedNoOpt = before - parsedQuestions.length;
+        parsedQuestions.forEach(q => { delete q._lower; });
+
         let unmarked = 0;
         parsedQuestions.forEach(q => {
           if (q.type === 'mcq' && q.options.length > 0) {
@@ -1342,10 +1491,11 @@
           const nTF = parsedQuestions.filter(q => q.type === 'tf').length;
           const nMCQ = parsedQuestions.length - nTF;
           const summary = `${nMCQ} trắc nghiệm, ${nTF} Đúng/Sai`;
+          const skipNote = skippedNoOpt > 0 ? ` Đã bỏ qua ${skippedNoOpt} câu tự luận/viết lại câu (không có đáp án A-D).` : '';
           if (unmarked > 0) {
-            this.showToast(`Nhận diện ${parsedQuestions.length} câu (${summary}), nhưng ${unmarked} câu chưa thấy đáp án được đánh dấu. Hãy kiểm tra lại!`, 'warning');
+            this.showToast(`Nhận diện ${parsedQuestions.length} câu (${summary}), nhưng ${unmarked} câu chưa thấy đáp án được đánh dấu (mặc định chọn A). Hãy kiểm tra lại!${skipNote}`, 'warning');
           } else {
-            this.showToast(`Đã nhận diện thành công ${parsedQuestions.length} câu hỏi (${summary})!`, 'success');
+            this.showToast(`Đã nhận diện thành công ${parsedQuestions.length} câu hỏi (${summary})!${skipNote}`, 'success');
           }
         } else {
           alert('Không nhận diện được câu hỏi. Hãy đảm bảo đề theo mẫu: "Câu 1: ...", đáp án "A. ... B. ... " hoặc các ý "a. b. c. d." cho câu Đúng/Sai');
@@ -1362,7 +1512,7 @@
         let cur = null;
 
         lines.forEach(line => {
-          const qMatch = line.match(/^(Câu\s*\d+|\d+)[:.]\s*(.*)/i);
+          const qMatch = line.match(/^((?:Câu|Bài|Question|Q)\s*\d+|\d+)\s*[:.)]?\s*(.*)/i);
           if (qMatch) {
             if (cur) parsed.push(cur);
             cur = {
