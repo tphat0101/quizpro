@@ -342,6 +342,7 @@
       <i class="fa-solid fa-circle-check text-lg"></i>
       <span id="practice-btn-text">Kiểm tra</span>
     </button>
+    <p class="hidden lg:block text-[11px] text-slate-500 text-center mt-1.5 bg-white/90 rounded-lg px-2 py-1 shadow-sm">Phím 1-4: chọn A-D • Enter: kiểm tra</p>
   </div>
 
   <!-- TOAST FEEDBACK ALERT -->
@@ -462,10 +463,76 @@
         this.loadLocalStorage();
         this.initSupabase();
         this.checkUrlForSharedQuiz();
+        this.bindKeyboard();
 
         if (window.pdfjsLib) {
           pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
+      },
+
+      // ---------------- PHÍM TẮT (PC): 1-4 chọn A-D, Enter kiểm tra ----------------
+      bindKeyboard() {
+        if (this._kbBound) return;
+        this._kbBound = true;
+
+        document.addEventListener('keydown', (e) => {
+          // Chỉ hoạt động khi đang làm bài
+          const view = document.getElementById('view-active-test');
+          if (!this.testSession || !view || view.classList.contains('hidden')) return;
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+          // Bỏ qua khi đang gõ chữ hoặc đang focus vào nút
+          const t = e.target;
+          if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(t.tagName))) {
+            // Radio vẫn cho phép dùng phím tắt
+            if (!(t.tagName === 'INPUT' && t.type === 'radio')) return;
+          }
+
+          const ses = this.testSession;
+          const idx = ses.currentIndex;
+          const q = ses.questions[idx];
+          if (!q) return;
+
+          // ---- Phím 1,2,3,4 (hàng số và numpad) ----
+          const m = (e.code || '').match(/^(?:Digit|Numpad)([1-4])$/);
+          if (m) {
+            e.preventDefault();
+            if (ses.isLocked[idx]) return;
+            const n = parseInt(m[1], 10) - 1;
+
+            if (q.type === 'mcq') {
+              if (n >= q.options.length) return;
+              const radio = document.querySelector(`input[name="active_q_${idx}"][value="${n}"]`);
+              if (radio) radio.checked = true;
+              this.handleSelectMcq(idx, n);
+              if (radio) radio.blur();
+            } else if (q.type === 'tf') {
+              // Câu Đúng/Sai: phím 1-4 đảo Đúng/Sai cho ý a-d (lần đầu = Đúng)
+              if (n >= q.subQuestions.length) return;
+              const cur = ses.userAnswers[idx] ? ses.userAnswers[idx][n] : undefined;
+              const val = cur === undefined ? true : !cur;
+              const radio = document.querySelector(`input[name="active_tf_${idx}_${n}"][value="${val}"]`);
+              if (radio) radio.checked = true;
+              this.handleSelectTf(idx, n, val);
+              if (radio) radio.blur();
+            }
+            return;
+          }
+
+          // ---- Phím Enter: kiểm tra (luyện tập) ----
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (e.repeat) return;
+            if (ses.mode !== 'practice') return;
+
+            // Câu đã đúng rồi -> Enter để sang câu tiếp ngay
+            if (ses.isLocked[idx]) {
+              if (idx + 1 < ses.questions.length) this.showQuestion(idx + 1);
+              return;
+            }
+            this.checkCurrentPracticeQuestion();
+          }
+        });
       },
 
       loadLocalStorage() {
