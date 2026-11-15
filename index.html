@@ -1282,6 +1282,9 @@
         const optRegexUpper = /^([A-D])\s*[\.\)]\s*(.*)/;
         const optRegexAny = /^([A-D])\s*[\.\)]\s*(.*)/i;
         const sectionRe = /^PART\s*\d+/i;
+        // Tiêu đề phần kiểu "PHẦN II. ... ĐÚNG - SAI" / "PHẦN I. ... 4 LỰA CHỌN" / "PHẦN III. TỰ LUẬN"
+        const viSectionRe = /^PHẦN\s+[IVX\d]+\b/i;
+        let sectionType = null; // 'tf' | 'mcq' | 'skip' | null
         // "1.1 Read the following passage ..." -> tiêu đề đoạn văn, các đoạn kế tiếp là bài đọc chung cho nhiều câu
         const passageHeadRe = /^\s*\d+\.\d+\s*[:.)]?\s*(?:Read|Mark|Choose|Fill|Complete)\b.*(?:passage|text|following)/i;
         let passageHtml = '';
@@ -1356,6 +1359,18 @@
             isWeak = Array.from(p.querySelectorAll('strong, b, u')).some(el => !labelOnlyRe.test(el.textContent));
           }
 
+          // Tiêu đề "PHẦN ...": xác định dạng câu hỏi của cả phần (Đúng/Sai, ABCD hoặc tự luận)
+          if (viSectionRe.test(rawText) && !qRegex.test(rawText)) {
+            if (currentQ) parsedQuestions.push(currentQ);
+            currentQ = null; collecting = false; passageParts = []; passageHtml = '';
+            if (/tự\s*luận/i.test(rawText)) sectionType = 'skip';
+            else if (tfHeaderRegex.test(rawText)) sectionType = 'tf';
+            else sectionType = 'mcq';
+            return;
+          }
+
+          if (sectionType === 'skip') return;
+
           // Sang PART mới: đóng câu hiện tại, bỏ bài đọc cũ
           if (sectionRe.test(rawText)) {
             if (currentQ) parsedQuestions.push(currentQ);
@@ -1391,7 +1406,7 @@
 
             currentQ = {
               id: 'q_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-              type: tfHeaderRegex.test(rawText) ? 'tf' : 'mcq',
+              type: (tfHeaderRegex.test(rawText) || sectionType === 'tf') ? 'tf' : 'mcq',
               content: stemHtml,
               options: [],
               subQuestions: [],
@@ -1474,6 +1489,12 @@
           } else if (q.type === 'tf' && q.subQuestions.length > 0) {
             const n = q.subQuestions.length;
             let picked = q.subQuestions.filter(s => s._strong);
+            // Câu Đúng/Sai có thể đúng cả 4 ý: nếu cả n ý đều tô màu/highlight thì coi cả n ý là Đúng
+            if (picked.length === n) {
+              picked.forEach(s => { s.correctAnswer = true; });
+              q.subQuestions.forEach(s => { delete s._strong; delete s._weak; delete s._lw; });
+              return;
+            }
             if (picked.length === 0 || picked.length === n) picked = q.subQuestions.filter(s => s._weak);
             if (picked.length === 0 || picked.length === n) picked = q.subQuestions.filter(s => s._lw);
             if (picked.length === 0 || picked.length === n) {
@@ -2028,6 +2049,29 @@
         btn.title = wrong > 0 ? `Sai ${wrong} lần` : '';
       },
 
+      // Tiếng "ting" khi chọn đúng (tạo bằng Web Audio, không cần file âm thanh)
+      playTing() {
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          if (!this._audioCtx) this._audioCtx = new AC();
+          const ctx = this._audioCtx;
+          if (ctx.state === 'suspended') ctx.resume();
+          const t0 = ctx.currentTime;
+          [[1318.5, 0], [1976, 0.09]].forEach(([freq, delay]) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, t0 + delay);
+            gain.gain.exponentialRampToValueAtTime(0.35, t0 + delay + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t0 + delay + 0.9);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(t0 + delay); osc.stop(t0 + delay + 0.95);
+          });
+        } catch (e) { /* trình duyệt chặn âm thanh: bỏ qua */ }
+      },
+
       checkCurrentPracticeQuestion() {
         const idx = this.testSession.currentIndex;
         const q = this.testSession.questions[idx];
@@ -2055,6 +2099,7 @@
         const badge = document.getElementById(`q-status-badge-${idx}`);
 
         if (isCorrect) {
+          this.playTing();
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
           this.showToast('Chính xác! Làm rất tốt.', 'success');
           this.testSession.isLocked[idx] = true;
