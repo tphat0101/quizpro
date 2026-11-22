@@ -240,28 +240,53 @@
       </div>
     </section>
 
-    <!-- VIEW 3: STUDENT ENTRY SCREEN (JOIN TEST) -->
-    <section id="view-student-entry" class="hidden max-w-md mx-auto mt-6 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-md">
-      <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
-          <i class="fa-solid fa-pen-nib"></i>
-        </div>
-        <h2 id="entry-quiz-title" class="text-xl font-bold text-slate-900 leading-snug">Bài kiểm tra trực tuyến</h2>
-        <p id="entry-quiz-meta" class="text-xs text-slate-500 mt-1">Thời gian: 45 phút • Trắc nghiệm</p>
-      </div>
+    <!-- VIEW 3: STUDENT ENTRY SCREEN (kiểu Azota) -->
+    <section id="view-student-entry" class="hidden max-w-[760px] mx-auto mt-2 sm:mt-6">
+      <button type="button" onclick="app.navTo('dashboard')" class="mb-3 text-sm font-medium text-slate-700 hover:text-brand-600 flex items-center gap-2">
+        <i class="fa-solid fa-chevron-left text-xs"></i> Quay lại
+      </button>
 
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Họ và tên của bạn *</label>
-          <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-3 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Lớp / Nhóm học *</label>
-          <input type="text" id="student-class" placeholder="Ví dụ: 12A1" class="w-full px-3 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      <div class="bg-white rounded-xl shadow-md p-5 sm:p-7">
+        <h2 id="entry-quiz-title" class="text-center text-[22px] sm:text-[24px] font-semibold text-slate-900 leading-snug break-words">Bài kiểm tra trực tuyến</h2>
+        <div class="flex items-center justify-center gap-3 mt-3 text-[15px] font-medium text-slate-800">
+          <span>Mã đề thi: <span id="entry-quiz-code">------</span></span>
+          <button type="button" onclick="app.copyQuizCode()" class="text-brand-600 hover:text-brand-700" title="Sao chép mã đề"><i class="fa-regular fa-copy text-lg"></i></button>
         </div>
 
-        <div id="mode-selector-wrap" class="space-y-2 pt-2">
-          <label class="block text-xs font-semibold text-slate-700 uppercase">Chọn hình thức làm bài</label>
+        <div class="mt-6 space-y-4 text-[16px] text-slate-800">
+          <div class="flex items-center justify-between gap-3">
+            <span class="flex items-center gap-3"><i class="fa-regular fa-clock w-5 text-center text-slate-600"></i> Thời gian làm bài</span>
+            <b id="entry-duration">45 phút</b>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="flex items-center gap-3"><i class="fa-regular fa-circle-question w-5 text-center text-slate-600"></i> Số lượng câu hỏi</span>
+            <b id="entry-count">0</b>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="flex items-center gap-3"><i class="fa-regular fa-clipboard w-5 text-center text-slate-600"></i> Loại đề</span>
+            <b id="entry-type">Trắc nghiệm</b>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="flex items-center gap-3"><i class="fa-regular fa-user w-5 text-center text-slate-600"></i> Tổng lượt đã làm của đề</span>
+            <b id="entry-attempts">0 lượt</b>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Họ và tên *</label>
+            <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" autocomplete="name" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Lớp / Nhóm học *</label>
+            <input type="text" id="student-class" placeholder="Ví dụ: 12A1" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          </div>
+        </div>
+        <label class="mt-2 inline-flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
+          <input type="checkbox" id="remember-student" checked class="rounded"> Ghi nhớ tên &amp; lớp cho lần sau
+        </label>
+
+        <div id="mode-selector-wrap" class="mt-4">
           <div class="grid grid-cols-2 gap-3" id="entry-mode-buttons">
             <button type="button" onclick="app.selectTestMode('practice')" id="btn-choose-practice" class="p-3 border-2 border-brand-500 bg-brand-50 rounded-xl text-left transition">
               <span class="block text-sm font-bold text-brand-700"><i class="fa-solid fa-dumbbell mr-1"></i> Luyện tập</span>
@@ -274,8 +299,14 @@
           </div>
         </div>
 
-        <button onclick="app.startTest()" class="w-full mt-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-md transition text-sm">
-          Bắt đầu làm bài <i class="fa-solid fa-arrow-right ml-1"></i>
+        <button id="btn-start-test" onclick="app.startTest()" class="w-full mt-5 h-[50px] rounded-lg text-white font-bold text-[16px] shadow transition hover:brightness-95 active:scale-[.99]" style="background:#f97316">
+          <span id="btn-start-label">Bắt đầu luyện tập</span> <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+        </button>
+      </div>
+
+      <div class="text-center mt-5">
+        <button type="button" onclick="app.openHistory()" class="px-6 py-3 bg-white border border-slate-200 rounded-lg text-slate-600 font-medium shadow-sm hover:bg-slate-50 transition">
+          Xem lịch sử làm bài
         </button>
       </div>
     </section>
@@ -437,6 +468,17 @@
   <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[80] hidden px-5 py-3 rounded-xl shadow-xl text-white font-medium text-sm flex items-center gap-2 transition duration-200">
     <i id="toast-icon" class="fa-solid fa-check"></i>
     <span id="toast-msg">Nội dung thông báo</span>
+  </div>
+
+  <!-- MODAL: LỊCH SỬ LÀM BÀI -->
+  <div id="modal-history" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-3">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-clock-rotate-left text-brand-600 mr-2"></i>Lịch sử làm bài</h3>
+        <button onclick="app.closeModal('modal-history')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="history-body" class="max-h-[60vh] overflow-y-auto custom-scroll space-y-2"></div>
+    </div>
   </div>
 
   <!-- MODAL: DELETE CONFIRMATION -->
@@ -1924,20 +1966,36 @@
       // ---------------- STUDENT ENTRY ----------------
       prepareStudentEntry(quiz) {
         this.currentQuiz = quiz;
+        const qs = quiz.questions || [];
+        const hasTf = qs.some(q => q.type === 'tf'), hasMcq = qs.some(q => q.type === 'mcq');
         document.getElementById('entry-quiz-title').innerText = quiz.title;
-        document.getElementById('entry-quiz-meta').innerText = `Thời gian: ${quiz.duration ? quiz.duration + ' phút' : 'Tự do'} • ${quiz.questions.length} câu hỏi`;
+        document.getElementById('entry-quiz-code').innerText = String(quiz.id || '').replace(/^q_/, '').slice(-6) || '------';
+        document.getElementById('entry-duration').innerText = quiz.duration ? quiz.duration + ' phút' : 'Tự do';
+        document.getElementById('entry-count').innerText = qs.length;
+        document.getElementById('entry-type').innerText = hasTf && hasMcq ? 'Trắc nghiệm + Đúng/Sai' : (hasTf ? 'Đúng/Sai' : 'Trắc nghiệm');
+        document.getElementById('entry-attempts').innerText = '… lượt';
+        this.loadAttemptCount(quiz.id);
+
+        // Nhớ tên & lớp đã nhập lần trước
+        try {
+          const saved = JSON.parse(localStorage.getItem('azota_student') || 'null');
+          if (saved) {
+            document.getElementById('student-name').value = saved.name || '';
+            document.getElementById('student-class').value = saved.cls || '';
+          }
+        } catch (e) {}
 
         const btnPractice = document.getElementById('btn-choose-practice');
         const btnExam = document.getElementById('btn-choose-exam');
+        const wrap = document.getElementById('mode-selector-wrap');
         if (quiz.allowedMode === 'practice') {
-          btnPractice.classList.remove('hidden');
-          btnExam.classList.add('hidden');
+          wrap.classList.add('hidden');
           this.selectTestMode('practice');
         } else if (quiz.allowedMode === 'exam') {
-          btnPractice.classList.add('hidden');
-          btnExam.classList.remove('hidden');
+          wrap.classList.add('hidden');
           this.selectTestMode('exam');
         } else {
+          wrap.classList.remove('hidden');
           btnPractice.classList.remove('hidden');
           btnExam.classList.remove('hidden');
           this.selectTestMode('practice');
@@ -1946,9 +2004,51 @@
         this.navTo('student-entry');
       },
 
+      async loadAttemptCount(quizId) {
+        const el = document.getElementById('entry-attempts');
+        let local = 0;
+        try { local = JSON.parse(localStorage.getItem('azota_submissions') || '[]').filter(s => s.quizId === quizId).length; } catch (e) {}
+        el.innerText = local + ' lượt';
+        if (!this.supabaseClient) return;
+        try {
+          const { count, error } = await this.supabaseClient.from('results').select('id', { count: 'exact', head: true }).eq('quiz_id', quizId);
+          if (!error && typeof count === 'number' && this.currentQuiz && this.currentQuiz.id === quizId) el.innerText = Math.max(count, local) + ' lượt';
+        } catch (e) {}
+      },
+
+      copyQuizCode() {
+        const code = document.getElementById('entry-quiz-code').innerText;
+        try { navigator.clipboard.writeText(code); } catch (e) {}
+        this.showToast('Đã sao chép mã đề: ' + code, 'success');
+      },
+
+      openHistory() {
+        const body = document.getElementById('history-body');
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem('azota_submissions') || '[]').filter(s => this.currentQuiz && s.quizId === this.currentQuiz.id); } catch (e) {}
+        if (!list.length) {
+          body.innerHTML = '<p class="text-center text-sm text-slate-400 py-8">Bạn chưa có lượt làm bài nào trên thiết bị này.</p>';
+        } else {
+          body.innerHTML = list.map(r => `
+            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200 text-sm">
+              <div>
+                <div class="font-semibold text-slate-800">${r.studentName} • ${r.studentClass}</div>
+                <div class="text-xs text-slate-400">${new Date(r.submittedAt).toLocaleString('vi-VN')} • ${r.mode === 'practice' ? 'Luyện tập' : 'Thi kiểm tra'} • ${r.durationText}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-black text-brand-600 text-lg">${r.score}</div>
+                <div class="text-xs text-slate-500">${Math.floor(r.correctCount)}/${r.totalQuestions} câu</div>
+              </div>
+            </div>`).join('');
+        }
+        this.openModal('modal-history');
+      },
+
       selectedMode: 'practice',
       selectTestMode(mode) {
         this.selectedMode = mode;
+        const lbl = document.getElementById('btn-start-label');
+        if (lbl) lbl.innerText = mode === 'practice' ? 'Bắt đầu luyện tập' : 'Bắt đầu làm bài';
         const btnP = document.getElementById('btn-choose-practice');
         const btnE = document.getElementById('btn-choose-exam');
 
@@ -1970,6 +2070,11 @@
           alert('Vui lòng nhập Họ tên và Lớp trước khi làm bài!');
           return;
         }
+        try {
+          const rem = document.getElementById('remember-student');
+          if (!rem || rem.checked) localStorage.setItem('azota_student', JSON.stringify({ name, cls: sClass }));
+          else localStorage.removeItem('azota_student');
+        } catch (e) {}
 
         let shuffledQuestions = JSON.parse(JSON.stringify(this.currentQuiz.questions));
         this.shuffleArray(shuffledQuestions);
