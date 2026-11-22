@@ -1429,8 +1429,18 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
+        // Bảng chứa đáp án (vd: 2x2 gồm "A. ... | B. ..." / "C. ... | D. ...") -> coi từng ô là một đáp án riêng
+        const isOptTable = (tb) => {
+          const cells = Array.from(tb.querySelectorAll('td, th'));
+          const hit = cells.filter(c => /^[A-Da-d]\s*[.)]/.test((c.textContent || '').trim()));
+          return hit.length >= 2 && hit.length === cells.filter(c => (c.textContent || '').trim()).length;
+        };
         const paragraphs = Array.from(doc.querySelectorAll('p, li, table, h1, h2, h3')).filter(el => {
-          if (el.tagName !== 'TABLE' && el.closest('table')) return false;
+          if (el.tagName === 'TABLE' && isOptTable(el)) return false;
+          if (el.tagName !== 'TABLE' && el.closest('table')) {
+            const tb = el.closest('table');
+            return isOptTable(tb) && !el.querySelector('p, li, table');
+          }
           if (el.tagName !== 'TABLE' && el.querySelector('p, li, table')) return false;
           return true;
         });
