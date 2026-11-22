@@ -114,6 +114,33 @@
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .latex-rendered { word-break: break-word; }
     main img { max-width: 100%; height: auto; }
+
+    /* ===== MÀN KẾT QUẢ + BẢNG XẾP HẠNG ===== */
+    #view-result { font-family: Roboto, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:#1b2437; }
+    .rs-card { background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(15,23,42,.06); }
+    .rs-row { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:15px; padding:8px 0; color:#334155; }
+    .rs-row .rs-l { display:flex; align-items:center; gap:10px; }
+    .rs-row .rs-l i { width:18px; text-align:center; color:#475569; }
+    .rs-row b { color:#1b2437; font-weight:700; text-align:right; }
+    .rs-btn { height:42px; border-radius:8px; border:1px solid; font-weight:700; font-size:15px; background:#fff; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s; width:100%; }
+    .rs-btn.orange { color:#f97316; border-color:#f97316; } .rs-btn.orange:hover { background:#fff7ed; }
+    .rs-btn.blue { color:#1e40af; border-color:#1e40af; } .rs-btn.blue:hover { background:#eff6ff; }
+    .rs-btn.red { color:#dc2626; border-color:#dc2626; } .rs-btn.red:hover { background:#fef2f2; }
+    .lb-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:10px; border:1.5px solid #e2e8f0; background:#fff; margin-bottom:14px; }
+    .lb-item.lb-1 { border-color:#facc15; background:linear-gradient(180deg,#fffbe6,#fff8d1); box-shadow:0 4px 14px rgba(250,204,21,.25); }
+    .lb-item.lb-2 { border-color:#94a3b8; background:#f1f5f9; }
+    .lb-item.lb-3 { border-color:#f97316; background:#fff0e8; }
+    .lb-item.lb-me { outline:2px solid #1f4fd8; outline-offset:1px; }
+    .lb-rank { flex:none; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; color:#fff; background:#cbd5e1; }
+    .lb-item.lb-1 .lb-rank { background:#facc15; } .lb-item.lb-2 .lb-rank { background:#94a3b8; } .lb-item.lb-3 .lb-rank { background:#f97316; }
+    .lb-item.lb-n .lb-rank { width:40px; height:40px; font-size:16px; color:#475569; background:#e2e8f0; }
+    .lb-avatar { flex:none; width:48px; height:48px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:21px; color:#111827; }
+    .lb-name { font-weight:700; font-size:17px; color:#1b2437; }
+    .lb-pts { font-weight:700; font-size:15px; color:#65a30d; }
+    .lb-time { font-size:12.5px; color:#64748b; }
+    .lb-crown { flex:none; margin-left:auto; width:34px; height:34px; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
+    .lb-item.lb-1 .lb-crown { background:#fcd34d; } .lb-item.lb-2 .lb-crown { background:#e5e7eb; } .lb-item.lb-3 .lb-crown { background:#fdba74; }
+    @media (max-width:640px) { .lb-item { gap:10px; padding:12px; } .lb-rank { width:42px; height:42px; font-size:17px; } .lb-avatar { width:40px; height:40px; font-size:17px; } .lb-name { font-size:15px; } }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
@@ -369,57 +396,60 @@
             <span><i class="inline-block w-3 h-3 rounded" style="background:#1f4fd8"></i> Đã chọn</span>
             <span class="practice-only"><i class="inline-block w-3 h-3 rounded" style="background:#2ea44f"></i> Đúng</span>
             <span class="practice-only"><i class="inline-block w-3 h-3 rounded" style="background:#e5484d"></i> Đã thử sai</span>
-            <span class="practice-only"><i class="inline-block w-3 h-3 rounded" style="background:#f5b400"></i> Đúng sau khi sai</span>
+            <span class="practice-only"><i class="inline-block w-3 h-3 rounded" style="background:#f5b400"></i> Đúng sau khi sai (tính sai)</span>
             <span><i class="inline-block w-3 h-3 rounded bg-slate-200"></i> Chưa làm</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- VIEW 5: RESULTS & REVIEW SCREEN -->
-    <section id="view-result" class="hidden max-w-3xl mx-auto space-y-6">
-      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
-        <div id="result-icon-box" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold bg-emerald-100 text-emerald-600">
-          <i class="fa-solid fa-trophy"></i>
+    <!-- VIEW 5: RESULTS & LEADERBOARD -->
+    <section id="view-result" class="hidden max-w-5xl mx-auto space-y-6">
+      <div class="grid lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)] gap-5 items-start">
+
+        <!-- Cột trái: điểm + thông tin -->
+        <div class="rs-card p-5 flex flex-col">
+          <div class="text-center">
+            <h2 class="text-[20px] font-bold" id="result-headline">Bài làm của bạn đã được gửi đi</h2>
+            <div class="mt-3 flex items-baseline justify-center gap-3 pb-3 border-b border-slate-100">
+              <span class="font-medium text-[15px]">Điểm của bạn:</span>
+              <span class="text-[32px] font-bold leading-none"><span id="res-score">0</span>/10</span>
+            </div>
+            <p id="res-quiz-title" class="mt-3 font-medium text-[15px] break-words"></p>
+          </div>
+
+          <div class="mt-3">
+            <div class="rs-row"><span class="rs-l"><i class="fa-regular fa-user"></i>Thí sinh</span><b id="res-student">-</b></div>
+            <div class="rs-row"><span class="rs-l"><i class="fa-regular fa-clock"></i>Thời gian làm bài</span><b id="res-duration">-</b></div>
+            <div class="rs-row"><span class="rs-l"><i class="fa-regular fa-circle-check"></i>Số câu đúng</span><b><span id="res-correct-count">0/0</span> <span class="text-slate-400 font-medium text-xs" id="res-accuracy"></span></b></div>
+            <div class="rs-row" id="res-row-wrong"><span class="rs-l"><i class="fa-regular fa-circle-xmark"></i>Số lượt chọn sai</span><b id="res-wrong-attempts">0</b></div>
+          </div>
+
+          <div id="res-wrong-summary" class="hidden mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-left max-h-48 overflow-y-auto custom-scroll"></div>
+
+          <div class="grid grid-cols-2 gap-3 mt-6">
+            <button onclick="app.retakeTest()" class="rs-btn orange"><i class="fa-regular fa-pen-to-square"></i> Luyện tập lại</button>
+            <button onclick="app.toggleReviewMode()" class="rs-btn blue">Xem đáp án <i class="fa-solid fa-chevron-right text-xs"></i></button>
+          </div>
+          <button id="btn-retry-wrong" onclick="app.retryWrong()" class="rs-btn red mt-3"><i class="fa-solid fa-rotate-left"></i> <span id="btn-retry-wrong-label">Luyện tập lại câu sai</span></button>
+          <button onclick="app.navTo('dashboard')" class="mt-3 text-sm text-slate-500 hover:text-slate-800 font-medium self-center">Về trang chủ</button>
         </div>
-        <h2 class="text-2xl font-bold text-slate-900" id="result-headline">Hoàn thành bài tập!</h2>
-        <p class="text-slate-500 text-sm mt-1" id="result-subtext">Bạn đã nộp bài thành công.</p>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span class="block text-xs font-semibold text-slate-500">Điểm số</span>
-            <span class="text-2xl font-black text-brand-600" id="res-score">10.0</span>
-            <span class="text-[10px] text-slate-400">Thang điểm 10</span>
+        <!-- Cột phải: bảng xếp hạng -->
+        <div class="rs-card p-5 sm:p-6">
+          <div class="flex items-center gap-3 flex-wrap">
+            <i class="fa-solid fa-trophy text-[26px]" style="color:#eab308"></i>
+            <h3 class="text-[26px] font-bold">Bảng xếp hạng</h3>
+            <span id="lb-count" class="text-[13px] font-medium px-3 py-1 rounded-full border" style="background:#e8ecfb;border-color:#b9c4ee;color:#1f3a9e">0 Thí sinh</span>
           </div>
-          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span class="block text-xs font-semibold text-slate-500">Số câu đúng</span>
-            <span class="text-2xl font-bold text-emerald-600" id="res-correct-count">0/0</span>
-            <span class="text-[10px] text-slate-400" id="res-accuracy">100%</span>
-          </div>
-          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span class="block text-xs font-semibold text-slate-500">Lần thử sai</span>
-            <span class="text-2xl font-bold text-amber-600" id="res-wrong-attempts">0</span>
-            <span class="text-[10px] text-slate-400">Lượt chọn sai</span>
-          </div>
-          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span class="block text-xs font-semibold text-slate-500">Thời gian</span>
-            <span class="text-2xl font-bold text-slate-700" id="res-duration">00:00</span>
-            <span class="text-[10px] text-slate-400">Phút : Giây</span>
-          </div>
-        </div>
-
-        <div id="res-wrong-summary" class="hidden mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left"></div>
-
-        <div class="flex flex-wrap justify-center gap-3 mt-6">
-          <button onclick="app.retakeTest()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium transition text-sm flex items-center gap-2">
-            <i class="fa-solid fa-rotate-right"></i> Luyện tập lại (Đảo đề)
+          <button onclick="app.shareLeaderboard()" class="mt-4 inline-flex items-center gap-2 px-4 h-10 rounded-lg border font-bold text-[15px]" style="background:#e8ecfb;border-color:#b9c4ee;color:#1f3a9e">
+            <i class="fa-solid fa-share-nodes"></i> Chia sẻ
           </button>
-          <button onclick="app.toggleReviewMode()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-5 py-2.5 rounded-xl font-medium transition text-sm flex items-center gap-2">
-            <i class="fa-solid fa-file-lines"></i> Xem lại chi tiết đáp án
-          </button>
-          <button onclick="app.navTo('dashboard')" class="bg-white border hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-medium transition text-sm">
-            Về trang chủ
-          </button>
+          <div id="lb-note" class="hidden mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"></div>
+          <div id="lb-list" class="mt-5"></div>
+          <div class="text-center mt-2">
+            <button id="lb-more" onclick="app.lbShowMore()" class="hidden px-8 h-11 rounded-lg text-white font-bold text-[15px]" style="background:#1f3fae">Xem thêm <i class="fa-solid fa-chevron-right text-xs ml-1"></i></button>
+          </div>
         </div>
       </div>
 
@@ -2076,7 +2106,8 @@
           else localStorage.removeItem('azota_student');
         } catch (e) {}
 
-        let shuffledQuestions = JSON.parse(JSON.stringify(this.currentQuiz.questions));
+        const retrySrc = this._retryQuestions; this._retryQuestions = null;
+        let shuffledQuestions = JSON.parse(JSON.stringify(retrySrc || this.currentQuiz.questions));
         this.shuffleArray(shuffledQuestions);
 
         shuffledQuestions.forEach(q => {
@@ -2089,6 +2120,7 @@
           studentName: name,
           studentClass: sClass,
           mode: this.selectedMode,
+          partial: !!retrySrc,
           quizId: this.currentQuiz.id,
           quizTitle: this.currentQuiz.title,
           questions: shuffledQuestions,
@@ -2107,6 +2139,7 @@
         const badge = document.getElementById('test-mode-badge');
         const isPractice = this.selectedMode === 'practice';
         badge.innerText = `${sClass} • ${isPractice ? 'Luyện tập (tự sửa sai)' : 'Thi kiểm tra'}`;
+        if (retrySrc) badge.innerText += ' • Luyện lại câu sai';
         document.querySelectorAll('.practice-only').forEach(el => el.style.display = isPractice ? '' : 'none');
         this.testSession.zoom = 0;
         this.applyZoom();
@@ -2181,6 +2214,7 @@
       restartTest() {
         if (!confirm('Bắt đầu lại bài làm từ đầu (đảo lại thứ tự câu hỏi)?')) return;
         if (this.testSession && this.testSession.timerInterval) clearInterval(this.testSession.timerInterval);
+        if (this.testSession && this.testSession.partial) this._retryQuestions = JSON.parse(JSON.stringify(this.testSession.questions));
         this.startTest();
       },
 
@@ -2445,9 +2479,10 @@
         if (isCorrect) {
           this.playTing();
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-          this.showToast('Chính xác! Làm rất tốt.', 'success');
-          this.testSession.isLocked[idx] = true;
           const wrongBefore = this.testSession.wrongAttempts[idx] || 0;
+          if (wrongBefore > 0) this.showToast('Đúng rồi, nhưng câu này đã chọn sai trước đó nên vẫn tính là SAI.', 'warning');
+          else this.showToast('Chính xác! Làm rất tốt.', 'success');
+          this.testSession.isLocked[idx] = true;
           this.updatePaletteButton(idx, 'correct');
           document.querySelectorAll(`#q-card-${idx} input`).forEach(i => i.disabled = true);
 
@@ -2459,7 +2494,7 @@
           if (badge) {
             if (wrongBefore > 0) {
               badge.className = "text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded";
-              badge.innerText = `✓ Đúng sau ${wrongBefore} lần sai`;
+              badge.innerText = `✓ Đúng sau ${wrongBefore} lần sai • tính là sai`;
             } else {
               badge.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded";
               badge.innerText = "✓ Chính xác";
@@ -2483,7 +2518,7 @@
           }
         } else {
           this.testSession.wrongAttempts[idx] = (this.testSession.wrongAttempts[idx] || 0) + 1;
-          this.showToast('Chưa chính xác! Hãy suy nghĩ và thử lại.', 'error');
+          this.showToast('Chưa chính xác! Câu này sẽ bị tính sai, hãy chọn lại để xem đáp án đúng.', 'error');
           this.updatePaletteButton(idx, 'wrong');
           if (q.type === 'mcq') {
             const badLabel = document.getElementById(`label-mcq-${idx}-${ans}`);
@@ -2510,45 +2545,51 @@
 
         let totalScore = 0;
         let correctCount = 0;
-        const totalQuestions = this.testSession.questions.length;
+        const ses = this.testSession;
+        const totalQuestions = ses.questions.length;
+        const isPractice = ses.mode === 'practice';
         let totalMistakes = 0;
+        Object.values(ses.wrongAttempts).forEach(count => { totalMistakes += count; });
+        const wrongQuestions = [];
 
-        Object.values(this.testSession.wrongAttempts).forEach(count => {
-          totalMistakes += count;
-        });
-
-        this.testSession.questions.forEach((q, idx) => {
-          const userAns = this.testSession.userAnswers[idx];
+        ses.questions.forEach((q, idx) => {
+          const userAns = ses.userAnswers[idx];
+          let got = 0; // điểm của câu: 0..1
           if (q.type === 'mcq') {
-            if (userAns !== undefined && q.options[userAns]?.isCorrect) {
-              correctCount++;
-            }
+            if (userAns !== undefined && q.options[userAns]?.isCorrect) got = 1;
           } else if (q.type === 'tf') {
             if (userAns) {
-              let subCorrectCount = 0;
-              q.subQuestions.forEach((sub, sIdx) => {
-                if (userAns[sIdx] === sub.correctAnswer) subCorrectCount++;
-              });
-              if (subCorrectCount === q.subQuestions.length) {
-                correctCount++;
-              } else if (subCorrectCount > 0) {
-                correctCount += (subCorrectCount / q.subQuestions.length);
-              }
+              let sub = 0;
+              q.subQuestions.forEach((sd, sIdx) => { if (userAns[sIdx] === sd.correctAnswer) sub++; });
+              got = sub === q.subQuestions.length ? 1 : sub / q.subQuestions.length;
             }
           }
+          // LUYỆN TẬP: đã từng chọn sai thì câu đó tính SAI, chọn lại đúng vẫn không được điểm
+          if (isPractice && (ses.wrongAttempts[idx] || 0) > 0) got = 0;
+          correctCount += got;
+          if (got < 1) wrongQuestions.push(q);
         });
+        this._wrongQuestions = wrongQuestions;
 
         totalScore = ((correctCount / totalQuestions) * 10).toFixed(2);
         const durationSec = Math.floor((Date.now() - this.testSession.startTime) / 1000);
         const mins = Math.floor(durationSec / 60);
         const secs = durationSec % 60;
         const durationText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        this._lastDurationSec = durationSec;
 
         document.getElementById('res-score').innerText = totalScore;
         document.getElementById('res-correct-count').innerText = `${Math.floor(correctCount)}/${totalQuestions}`;
         document.getElementById('res-accuracy').innerText = `${((correctCount / totalQuestions) * 100).toFixed(0)}%`;
         document.getElementById('res-wrong-attempts').innerText = totalMistakes;
-        document.getElementById('res-duration').innerText = durationText;
+        document.getElementById('res-duration').innerText = this.fmtDurVi(durationSec);
+        document.getElementById('res-quiz-title').innerText = ses.quizTitle || '';
+        document.getElementById('res-student').innerText = ses.studentName;
+        document.getElementById('res-row-wrong').style.display = isPractice ? '' : 'none';
+        const rw = document.getElementById('btn-retry-wrong');
+        rw.style.display = wrongQuestions.length ? '' : 'none';
+        document.getElementById('btn-retry-wrong-label').innerText = `Luyện tập lại câu sai (${wrongQuestions.length})`;
+        document.getElementById('result-headline').innerText = ses.partial ? 'Bạn đã luyện lại các câu sai' : 'Bài làm của bạn đã được gửi đi';
 
         const wrongList = Object.entries(this.testSession.wrongAttempts)
           .filter(([, c]) => c > 0)
@@ -2558,7 +2599,7 @@
         if (wrongList.length > 0) {
           sumEl.classList.remove('hidden');
           sumEl.innerHTML = `
-            <p class="text-xs font-bold text-amber-800 uppercase mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Các câu bạn đã làm sai (${wrongList.length} câu)</p>
+            <p class="text-xs font-bold text-amber-800 uppercase mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Các câu đã chọn sai – tính là sai (${wrongList.length} câu)</p>
             <div class="flex flex-wrap gap-2">
               ${wrongList.map(w => `<span class="px-2.5 py-1 bg-white border border-amber-300 text-amber-900 rounded-lg text-xs font-semibold">Câu ${w.no}: sai ${w.count} lần</span>`).join('')}
             </div>`;
@@ -2580,6 +2621,8 @@
           wrongAttempts: totalMistakes,
           wrongByQuestion: wrongList,
           durationText: durationText,
+          durationSec: durationSec,
+          partial: !!ses.partial,
           submittedAt: new Date().toISOString()
         };
 
@@ -2587,6 +2630,7 @@
         await this.saveSubmissionToCloud(submissionPayload);
 
         this.navTo('result');
+        this.renderLeaderboard(ses.quizId, submissionPayload);
       },
 
       saveSubmissionLocally(sub) {
@@ -2629,7 +2673,7 @@
 
           let html = `
             <div class="font-bold text-sm text-slate-800">Câu ${idx + 1}: ${q.content}</div>
-            ${(this.testSession.wrongAttempts[idx] || 0) > 0 ? `<div class="inline-block text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">Đã sai ${this.testSession.wrongAttempts[idx]} lần</div>` : ''}
+            ${(this.testSession.wrongAttempts[idx] || 0) > 0 ? `<div class="inline-block text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">Đã sai ${this.testSession.wrongAttempts[idx]} lần${this.testSession.mode === 'practice' ? ' → tính là sai' : ''}</div>` : ''}
           `;
 
           if (q.type === 'mcq') {
@@ -2686,6 +2730,118 @@
         });
 
         container.scrollIntoView({ behavior: 'smooth' });
+      },
+
+      // ---------------- BẢNG XẾP HẠNG ----------------
+      fmtDurVi(sec) {
+        sec = Math.max(0, Math.round(sec || 0));
+        const m = Math.floor(sec / 60), r = sec % 60;
+        return m > 0 ? `${m} phút ${r} giây` : `${r} giây`;
+      },
+      escHtml(t) {
+        return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      },
+      lbKey(sub) {
+        return `${(sub.studentName || '').trim().toLowerCase()}|${(sub.studentClass || '').trim().toLowerCase()}`;
+      },
+      async renderLeaderboard(quizId, current) {
+        const listEl = document.getElementById('lb-list');
+        const note = document.getElementById('lb-note');
+        listEl.innerHTML = '<div class="text-center text-slate-400 py-10 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải bảng xếp hạng...</div>';
+        document.getElementById('lb-more').classList.add('hidden');
+        if (current && current.partial) {
+          note.innerText = 'Lượt luyện lại câu sai không tính vào bảng xếp hạng.';
+          note.classList.remove('hidden');
+        } else note.classList.add('hidden');
+
+        let all = [];
+        try { all = JSON.parse(localStorage.getItem('azota_submissions') || '[]').filter(x => x.quizId === quizId); } catch (e) {}
+        if (this.supabaseClient) {
+          try {
+            const { data, error } = await this.supabaseClient.from('results').select('data').eq('quiz_id', quizId);
+            if (!error && data) {
+              const map = new Map();
+              all.forEach(x => map.set(x.id, x));
+              data.forEach(d => { if (d && d.data) map.set(d.data.id, d.data); });
+              all = Array.from(map.values());
+            }
+          } catch (e) { console.error(e); }
+        }
+
+        const secOf = x => {
+          if (typeof x.durationSec === 'number') return x.durationSec;
+          const m = /^(\d+):(\d+)$/.exec(x.durationText || '');
+          return m ? (+m[1]) * 60 + (+m[2]) : 0;
+        };
+        // mỗi thí sinh (tên + lớp) chỉ lấy lượt tốt nhất: điểm cao hơn, rồi thời gian ngắn hơn
+        const best = new Map();
+        all.filter(x => !x.partial).forEach(x => {
+          const k = this.lbKey(x);
+          const cand = { ...x, _sec: secOf(x), _score: parseFloat(x.score) || 0 };
+          const old = best.get(k);
+          if (!old || cand._score > old._score || (cand._score === old._score && cand._sec < old._sec)) best.set(k, cand);
+        });
+        const rows = Array.from(best.values()).sort((a, b) => b._score - a._score || a._sec - b._sec);
+        this._lb = { rows, shown: 3, meKey: current ? this.lbKey(current) : null };
+        this.drawLeaderboard();
+      },
+      lbItemHtml(r, i, isMe) {
+        const medal = i < 3 ? `lb-${i + 1}` : 'lb-n';
+        const words = (r.studentName || '?').trim().split(/\s+/);
+        const ini = (words.length > 1 ? words[0][0] + words[words.length - 1][0] : words[0][0]).toUpperCase();
+        return `<div class="lb-item ${medal} ${isMe ? 'lb-me' : ''}">
+          <div class="lb-rank">${i + 1}</div>
+          <div class="lb-avatar">${this.escHtml(ini)}</div>
+          <div class="min-w-0">
+            <div class="lb-name truncate">${this.escHtml(r.studentName)}${isMe ? ' <span class="text-[11px] font-bold px-2 py-0.5 rounded-full align-middle" style="background:#1f4fd8;color:#fff">Bạn</span>' : ''}</div>
+            <div class="lb-pts">${parseFloat(r._score.toFixed(2))} điểm</div>
+            <div class="lb-time"><i class="fa-regular fa-clock mr-1"></i>${this.fmtDurVi(r._sec)}</div>
+          </div>
+          ${i < 3 ? '<div class="lb-crown"><i class="fa-solid fa-crown"></i></div>' : ''}
+        </div>`;
+      },
+      drawLeaderboard() {
+        const { rows, shown, meKey } = this._lb;
+        document.getElementById('lb-count').innerText = `${rows.length} Thí sinh`;
+        const listEl = document.getElementById('lb-list');
+        if (!rows.length) {
+          listEl.innerHTML = '<div class="text-center text-slate-400 py-10 text-sm">Chưa có ai trong bảng xếp hạng.</div>';
+          document.getElementById('lb-more').classList.add('hidden');
+          return;
+        }
+        let html = rows.slice(0, shown).map((r, i) => this.lbItemHtml(r, i, this.lbKey(r) === meKey)).join('');
+        const meIdx = rows.findIndex(r => this.lbKey(r) === meKey);
+        if (meIdx >= shown) {
+          html += '<div class="text-center text-slate-300 tracking-widest -mt-1 mb-2">• • •</div>' + this.lbItemHtml(rows[meIdx], meIdx, true);
+        }
+        listEl.innerHTML = html;
+        document.getElementById('lb-more').classList.toggle('hidden', shown >= rows.length);
+      },
+      lbShowMore() {
+        if (!this._lb) return;
+        this._lb.shown += 10;
+        this.drawLeaderboard();
+      },
+      async shareLeaderboard() {
+        const ses = this.testSession;
+        const quizId = ses ? ses.quizId : (this.currentQuiz && this.currentQuiz.id);
+        const base = window.location.origin + window.location.pathname;
+        let url = base;
+        if (this.supabaseClient && quizId) url = `${base}?quizId=${quizId}`;
+        else if (this.currentQuiz) url = `${base}#quiz=${LZString.compressToEncodedURIComponent(JSON.stringify(this.currentQuiz))}`;
+        const me = this._lb && this._lb.meKey ? this._lb.rows.findIndex(r => this.lbKey(r) === this._lb.meKey) : -1;
+        const text = me >= 0 ? `Mình đang đứng hạng ${me + 1}/${this._lb.rows.length} ở "${ses.quizTitle}". Thử sức không?` : `Cùng làm bài "${ses ? ses.quizTitle : ''}" nhé!`;
+        try {
+          if (navigator.share) { await navigator.share({ title: 'Bảng xếp hạng', text, url }); return; }
+        } catch (e) { if (e && e.name === 'AbortError') return; }
+        try { await navigator.clipboard.writeText(`${text}\n${url}`); this.showToast('Đã sao chép link chia sẻ!', 'success'); }
+        catch (e) { prompt('Sao chép link này:', url); }
+      },
+      retryWrong() {
+        if (!this._wrongQuestions || !this._wrongQuestions.length) { this.showToast('Không có câu sai nào để luyện lại.', 'info'); return; }
+        this._retryQuestions = JSON.parse(JSON.stringify(this._wrongQuestions));
+        this.selectedMode = 'practice';
+        this.startTest();
       },
 
       retakeTest() {
